@@ -1,11 +1,19 @@
-import Image from "next/image";
+"use client";
+import { useEffect } from "react";
+import { useClerk } from "@clerk/nextjs";
 
 export default function Home() {
-  return (
-    <>
-      <h1 className="text-4xl font-bold text-center my-10">
-        Welcome to PixelForge
-      </h1>
-    </>
-  );
+  const { openSignIn } = useClerk();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("auth") === "login") {
+      openSignIn({
+        oauthFlow: "popup",
+        fallbackRedirectUrl: "/generate",
+      });
+    }
+  }, [openSignIn]);
+
+  return <div className="p-10 text-3xl">Welcome to pixelForge</div>;
 }
