@@ -15,7 +15,7 @@ export default function GeneratePage() {
     }
   }, [isSignedIn, isLoaded, router]);
 
-  if (isLoaded && !isSignedIn) {
+  if (!isSignedIn) {
     return <p>Redirecting...</p>;
   }
 

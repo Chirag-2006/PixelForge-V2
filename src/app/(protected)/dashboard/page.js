@@ -13,7 +13,7 @@ export default function DashboardPage() {
     }
   }, [isSignedIn, isLoaded, router]);
 
-  if ( isLoaded && !isSignedIn) {
+  if (!isSignedIn) {
     return <p>Redirecting...</p>;
   }
 
