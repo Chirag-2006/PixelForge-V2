@@ -15,6 +15,13 @@
       "when": 1764162266900,
       "tag": "0001_chief_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1764165485506,
+      "tag": "0002_worthless_reavers",
+      "breakpoints": true
     }
   ]
 }
