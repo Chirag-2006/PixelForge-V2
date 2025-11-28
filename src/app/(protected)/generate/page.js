@@ -2,6 +2,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import GenerateClient from "./generate-client";
 
 export default function GeneratePage() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -19,5 +20,10 @@ export default function GeneratePage() {
     return <p>Redirecting...</p>;
   }
 
-  return <div className="p-10 text-2xl">Generate Page</div>;
+  return (
+    <>
+      <div className="p-10 text-2xl">Generate Page</div>
+      <GenerateClient />
+    </>
+  );
 }
