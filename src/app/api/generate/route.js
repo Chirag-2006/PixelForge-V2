@@ -6,6 +6,9 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { generateImage } from "@/lib/aiImageGenerator";
 import { NextResponse } from "next/server";
+import { fetchAsBuffer } from "@/lib/utils/fetchAsBuffer";
+import { uploadImageToCloudinary } from "@/lib/upload/cloudinary";
+import { saveImageToDB } from "../images/imageSaveToDB";
 
 export async function POST(req) {
   try {
@@ -53,7 +56,11 @@ export async function POST(req) {
     // 5. FREE PLAN LIMIT PROTECTION
     if (user.plan === "FREE" && user.generationCount >= 5) {
       return NextResponse.json(
-        { success: false, error: "Free plan limit reached (5/5). Upgrade to Pro.", limitReached: true },
+        {
+          success: false,
+          error: "Free plan limit reached (5/5). Upgrade to Pro.",
+          limitReached: true,
+        },
         { status: 403 }
       );
     }
@@ -74,6 +81,20 @@ export async function POST(req) {
       );
     }
 
+    //7. convert into buffer
+    const buffer = await fetchAsBuffer(result.imageUrl);
+
+    // 3) Upload buffer → Cloudinary
+    const cloudUpload = await uploadImageToCloudinary(buffer);
+
+    if (!cloudUpload.success)
+      return Response.json({ error: "Cloudinary upload failed" });
+
+    const cloudUrl = cloudUpload.url;
+
+    //9. save image to db
+    await saveImageToDB({ ownerId: userId, prompt, imageUrl: cloudUrl });
+
     // 7. UPDATE GENERATION COUNT
     await db
       .update(users)
@@ -84,7 +105,7 @@ export async function POST(req) {
     return NextResponse.json(
       {
         success: true,
-        imageUrl: result.imageUrl,
+        imageUrl: cloudUrl,
         message: "Image generated successfully",
       },
       { status: 200 }
