@@ -31,7 +31,7 @@ export const users = mysqlTable("users", {
 // IMAGES TABLE
 // -----------------------
 export const images = mysqlTable("images", {
-  id: varchar("id", { length: 255 }).primaryKey(),
+  id: int("id", { length: 255 }).primaryKey().autoincrement(),
   ownerId: varchar("owner_id", { length: 255 }).notNull(),
   url: varchar("url", { length: 2000 }).notNull(),
   prompt: varchar("prompt", { length: 2000 }),

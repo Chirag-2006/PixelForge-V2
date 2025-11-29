@@ -4,7 +4,7 @@
 
 export async function generateImage(prompt) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
   try {
     const encodedPrompt = encodeURIComponent(prompt);
     const url = `https://pollinations.ai/p/${encodedPrompt}`;

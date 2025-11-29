@@ -8,7 +8,7 @@ import { generateImage } from "@/lib/aiImageGenerator";
 import { NextResponse } from "next/server";
 import { fetchAsBuffer } from "@/lib/utils/fetchAsBuffer";
 import { uploadImageToCloudinary } from "@/lib/upload/cloudinary";
-import { saveImageToDB } from "../images/imageSaveToDB";
+import { saveImageToDB } from "../images/imageActions";
 
 export async function POST(req) {
   try {
