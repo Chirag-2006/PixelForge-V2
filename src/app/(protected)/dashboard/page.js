@@ -2,6 +2,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import DashboardClientPage from "./dashboard-client";
 
 export default function DashboardPage() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -17,5 +18,9 @@ export default function DashboardPage() {
     return <p>Redirecting...</p>;
   }
 
-  return <div className="p-6">Dashboard</div>;
+  return (
+    <>
+      <DashboardClientPage />
+    </>
+  );
 }
