@@ -1,13 +1,26 @@
-import { publishImage } from "../imageActions";
+import { NextResponse } from "next/server";
+import { publishImageById } from "@/app/api/images/imageActions";
 import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req) {
-  const { userId } = auth();
-  if (!userId) return Response.json({ error: "Not logged in" }, { status: 401 });
-
   const { imageId } = await req.json();
+  const { userId } = await auth();
 
-  await publishImage(imageId);
+  if (!userId) {
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 }
+    );
+  }
 
-  return Response.json({ success: true });
+  if (!imageId) {
+    return NextResponse.json(
+      { message: "Missing image ID", success: false },
+      { status: 400 }
+    );
+  }
+  // Call your server function
+  const data = await publishImageById(imageId);
+
+  return NextResponse.json({ data, success: true }, { status: 200 });
 }

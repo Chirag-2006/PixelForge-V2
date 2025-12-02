@@ -93,7 +93,7 @@ export async function POST(req) {
     const cloudUrl = cloudUpload.url;
 
     //9. save image to db
-    await saveImageToDB({ ownerId: userId, prompt, imageUrl: cloudUrl });
+   const data = await saveImageToDB({ ownerId: userId, prompt, imageUrl: cloudUrl });
 
     // 7. UPDATE GENERATION COUNT
     await db
@@ -107,6 +107,7 @@ export async function POST(req) {
         success: true,
         imageUrl: cloudUrl,
         message: "Image generated successfully",
+        imageData: data
       },
       { status: 200 }
     );

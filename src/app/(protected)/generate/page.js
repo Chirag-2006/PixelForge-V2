@@ -1,18 +1,15 @@
 "use client";
 
-
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-
 // shadcn components
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-
 
 // icons
 import {
@@ -23,20 +20,17 @@ import {
   UploadCloud,
 } from "lucide-react";
 
-
 export default function GeneratePage() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
-
 
   const [prompt, setPrompt] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
 
-
   const [imageUrl, setImageUrl] = useState("");
   const [imgLoading, setImgLoading] = useState(false);
-
+  const [imageData, setImageData] = useState(null);
 
   // 🟡 Page skeleton initial
   const [pageLoading, setPageLoading] = useState(true);
@@ -45,14 +39,12 @@ export default function GeneratePage() {
     return () => clearTimeout(t);
   }, []);
 
-
   // Protect route
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push("/?auth=login");
     }
   }, [isLoaded, isSignedIn, router]);
-
 
   if (!isSignedIn || pageLoading) {
     return (
@@ -66,7 +58,6 @@ export default function GeneratePage() {
     );
   }
 
-
   // ▶️ Generate Image
   const generate = async () => {
     if (!prompt.trim()) {
@@ -74,11 +65,9 @@ export default function GeneratePage() {
       return;
     }
 
-
     setLoading(true);
     setImgLoading(true);
     setImageUrl("");
-
 
     try {
       const res = await fetch("/api/generate", {
@@ -87,9 +76,10 @@ export default function GeneratePage() {
         body: JSON.stringify({ prompt }),
       });
 
+      console.log('res in gernerate page.js', res);
+      
 
       const data = await res.json();
-
 
       if (data.limitReached) {
         toast.error("Free limit reached!");
@@ -97,16 +87,22 @@ export default function GeneratePage() {
         return;
       }
 
-
       if (!res.ok) {
         toast.error(data.error || "Error generating image");
         setLoading(false);
         return;
       }
 
+      if (!data.imageUrl) {
+        toast.error("Error generating image");
+        setLoading(false);
+        return;
+      }
+
+      setImageData(data);
 
       setImageUrl(data.imageUrl);
-      toast.success("Image generated");
+      toast.success("Image generated"); 
     } catch (err) {
       toast.error("Network error");
     } finally {
@@ -114,44 +110,57 @@ export default function GeneratePage() {
     }
   };
 
+  // console.log('image data in generate page', imageData);
 
   // ▶️ Publish
   const publishImage = async () => {
+    if (!imageData.imageData?.[0]?.insertId) {
+      toast.error("No image to publish");
+      return;
+    }
+
     try {
       const res = await fetch("/api/images/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl }),
+        body: JSON.stringify({ imageId: imageData.imageData?.[0]?.insertId}),
       });
 
-
-      const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error || "Error publishing image");
+        const errorData = await res.json();
+        toast.error(errorData.error || "Failed to publish");
         return;
       }
 
-
-      toast.success("Published!");
-    } catch {
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Image published successfully!");
+        router.push("/explore");
+      } else {
+        toast.error(data.error || "Unexpected error");
+      }
+    } catch (err) {
       toast.error("Network error");
     }
   };
 
-
   // ▶️ Download
-  const downloadImage = () => {
-    const link = document.createElement("a");
-    link.href = imageUrl;
-    link.download = "pixelForge-image.png";
-    link.click();
-  };
-
+  // const downloadImage = () => {
+  //    if (!imageUrl) {
+  //   toast.error("No image to download");
+  //   return;
+  // }
+  // const link = document.createElement("a");
+  // link.href = imageUrl;
+  // link.download = "pixelForge-image.png"; // File ka naam jo download hoga
+  // document.body.appendChild(link);
+  // link.click();  // Yahi click download trigger karta hai bina reload ya redirect ke
+  // document.body.removeChild(link);
+  // };
 
   return (
     <div className=" container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-8">✨ Generate Your Image</h1>
-
 
       <div className="flex flex-col md:flex-row gap-8">
         {/* LEFT SMALL AREA */}
@@ -159,7 +168,6 @@ export default function GeneratePage() {
           <CardHeader>
             <h2 className="text-xl font-semibold">Enter your prompt</h2>
           </CardHeader>
-
 
           <CardContent>
             {/* Expandable textarea */}
@@ -180,7 +188,6 @@ export default function GeneratePage() {
                 }`}
               />
 
-
               {/* Show icon only when prompt > 40 characters */}
               {prompt.length > 40 && (
                 <button
@@ -196,7 +203,6 @@ export default function GeneratePage() {
               )}
             </div>
 
-
             {/* Generate Button */}
             <Button
               onClick={generate}
@@ -208,14 +214,12 @@ export default function GeneratePage() {
           </CardContent>
         </Card>
 
-
         {/* RIGHT — BIG PREVIEW AREA */}
         <Card className="border border-gray-300 shadow-sm p-4 min-h-[470px] flex flex-col items-center justify-center flex-2">
           {/* IMAGE SKELETON */}
           {!imageUrl && imgLoading && (
             <div className="w-lg h-[512px] bg-gray-300 rounded-xl animate-pulse" />
           )}
-
 
           {/* IMAGE */}
           {imageUrl && (
@@ -230,7 +234,6 @@ export default function GeneratePage() {
             />
           )}
 
-
           {/* BUTTON GROUP */}
           {imageUrl && !imgLoading && (
             <div className="flex gap-3 mt-5 w-full justify-center">
@@ -241,7 +244,6 @@ export default function GeneratePage() {
                 <UploadCloud size={18} /> Publish
               </Button>
 
-
               <Button
                 onClick={generate}
                 className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
@@ -249,16 +251,14 @@ export default function GeneratePage() {
                 <RefreshCw size={18} /> Regenerate
               </Button>
 
-
-              <Button
+              {/* <Button
                 onClick={downloadImage}
                 className="bg-black hover:bg-gray-800 flex items-center gap-2"
               >
                 <Download size={18} /> Download
-              </Button>
+              </Button> */}
             </div>
           )}
-
 
           {/* No Image Yet */}
           {!imageUrl && !imgLoading && (

@@ -26,21 +26,21 @@ export default function ExplorePage() {
                 ...img,
                 user: {
                   username: userData?.user.username || img.ownerId?.slice(-8),
-                  imageUrl: userData?.user?.avatar
-                }
+                  imageUrl: userData?.user?.avatar,
+                },
               };
             } catch (error) {
               return {
                 ...img,
                 user: {
                   username: img.ownerId?.slice(-8),
-                  imageUrl: null
-                }
+                  imageUrl: null,
+                },
               };
             }
           })
         );
-        
+
         setImages(imagesWithUser);
       } catch (error) {
         console.error("Error fetching public images:", error);
@@ -66,9 +66,14 @@ export default function ExplorePage() {
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-8">Explore</h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {Array(12).fill().map((_, i) => (
-            <div key={i} className="aspect-square bg-gray-200 rounded-lg animate-pulse" />
-          ))}
+          {Array(12)
+            .fill()
+            .map((_, i) => (
+              <div
+                key={i}
+                className="aspect-square bg-gray-200 rounded-lg animate-pulse"
+              />
+            ))}
         </div>
       </div>
     );
@@ -80,7 +85,9 @@ export default function ExplorePage() {
         <h1 className="text-3xl font-bold mb-8">Explore</h1>
         <div className="text-center py-20">
           <p className="text-2xl text-gray-500 mb-4">No public images yet</p>
-          <p className="text-gray-400">Be the first to publish your creation!</p>
+          <p className="text-gray-400">
+            Be the first to publish your creation!
+          </p>
         </div>
       </div>
     );
@@ -89,7 +96,7 @@ export default function ExplorePage() {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-12">Explore</h1>
-      
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {images.map((img) => {
           const isHovered = hoveredImageId === img.id;
@@ -118,7 +125,7 @@ export default function ExplorePage() {
               <div
                 className={`
                   absolute bottom-0 left-0 right-0 h-0 group-hover:h-2/3
-                  bg-gradient-to-t from-black/90 via-black/70 to-transparent
+                  bg-linear-to-t from-black/90 via-black/70 to-transparent
                   backdrop-blur-sm transition-all duration-500 ease-out flex flex-col justify-end p-4
                   overflow-hidden
                 `}
@@ -133,10 +140,10 @@ export default function ExplorePage() {
                         alt={user.username}
                         width={36}
                         height={36}
-                        className="w-9 h-9 rounded-full ring-2 ring-white/50 object-cover flex-shrink-0"
+                        className="w-9 h-9 rounded-full ring-2 ring-white/50 object-cover shrink-0"
                       />
                     ) : (
-                      <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center ring-2 ring-white/50 flex-shrink-0">
+                      <div className="w-9 h-9 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center ring-2 ring-white/50 shrink-0">
                         <span className="text-xs font-bold text-white">
                           {user.username?.charAt(0)?.toUpperCase()}
                         </span>

@@ -11,6 +11,7 @@ export default function GenerateClient() {
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
 
+  
   async function generate() {
     if (!prompt) {
       toast.error("Prompt is required", {
