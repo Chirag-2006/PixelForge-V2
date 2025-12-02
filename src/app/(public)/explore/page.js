@@ -1,7 +1,7 @@
 "use client";
 
 import { getPublicImages } from "@/app/api/images/imageActions";
-import { getPublicUserProfile } from "@/app/api/user/userActions"; // Simple user fetch
+import { getPublicUserProfile } from "@/app/api/user/userActions";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -9,14 +9,11 @@ import { useEffect, useState } from "react";
 export default function ExplorePage() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hoveredImageId, setHoveredImageId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
         const data = await getPublicImages();
-        
         // Fetch simple user info (just username + avatar)
         const imagesWithUser = await Promise.all(
           data.map(async (img) => {
@@ -26,10 +23,10 @@ export default function ExplorePage() {
                 ...img,
                 user: {
                   username: userData?.user.username || img.ownerId?.slice(-8),
-                  imageUrl: userData?.user?.avatar,
+                  imageUrl: userData?.user?.imageUrl,
                 },
               };
-            } catch (error) {
+            } catch {
               return {
                 ...img,
                 user: {
@@ -42,8 +39,7 @@ export default function ExplorePage() {
         );
 
         setImages(imagesWithUser);
-      } catch (error) {
-        console.error("Error fetching public images:", error);
+      } catch {
         setImages([]);
       } finally {
         setLoading(false);
@@ -53,123 +49,144 @@ export default function ExplorePage() {
     fetchData();
   }, []);
 
-  const handleMouseEnter = (imageId) => {
-    setHoveredImageId(imageId);
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredImageId(null);
-  };
-
+  /* ------------------------- SKELETON --------------------------- */
   if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-8">Explore</h1>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {Array(12)
+        <div className="h-10 w-48 bg-gray-800/40 rounded-lg animate-pulse mb-6"></div>
+        <div className="h-4 w-64 bg-gray-800/30 rounded-lg animate-pulse mb-10"></div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {Array(9)
             .fill()
             .map((_, i) => (
               <div
                 key={i}
-                className="aspect-square bg-gray-200 rounded-lg animate-pulse"
-              />
+                className="aspect-[4/5] bg-gray-800/30 rounded-2xl animate-pulse"
+              ></div>
             ))}
         </div>
       </div>
     );
   }
 
+  /* ----------------------- NO IMAGES ---------------------------- */
   if (images.length === 0) {
     return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-8">Explore</h1>
-        <div className="text-center py-20">
-          <p className="text-2xl text-gray-500 mb-4">No public images yet</p>
-          <p className="text-gray-400">
-            Be the first to publish your creation!
-          </p>
-        </div>
+      <div className="container mx-auto p-6 text-center">
+        <h1 className="text-4xl font-bold mb-4">Explore</h1>
+        <p className="text-gray-400 text-lg">No public images yet.</p>
       </div>
     );
   }
 
+  /* ----------------------- MAIN EXPLORE PAGE ---------------------------- */
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-12">Explore</h1>
+      {/* Heading */}
+      <div className="mb-12 text-center">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">
+          Explore Library
+        </h1>
+        <p className="text-gray-400 mt-2 tracking-wide">
+          A collection of stunning AI images published by the community
+        </p>
+      </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {/* Larger Images Grid (Library style) */}
+      <div
+        className="
+        grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 
+        gap-8
+      "
+      >
         {images.map((img) => {
-          const isHovered = hoveredImageId === img.id;
           const user = img.user;
+
+          // Trim prompt to 10 characters
+          const shortPrompt =
+            img.prompt.length > 10
+              ? img.prompt.slice(0, 50) + "..."
+              : img.prompt;
 
           return (
             <Link
               key={img.id}
               href={`/u/${img.ownerId}`}
-              className="block aspect-square group relative overflow-hidden rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 w-full"
-              onMouseEnter={() => handleMouseEnter(img.id)}
-              onMouseLeave={handleMouseLeave}
+              className="
+                group block aspect-[4/5] relative overflow-hidden
+                rounded-2xl border border-gray-800/40
+                hover:border-purple-400/50
+                hover:shadow-[0_0_40px_rgba(139,92,246,0.25)]
+                transition-all duration-500
+              "
             >
-              {/* Main Image - Full Coverage */}
+              {/* Big High-Quality Image */}
               <Image
                 src={img.url}
                 alt={img.prompt}
-                width={600}
-                height={600}
-                // fill
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-                className="object-cover transition-transform duration-500 border border-rose-800 group-hover:scale-110"
+                width={800}
+                height={1000}
+                className="
+                  object-cover w-full h-full
+                  transition-all duration-700
+                  group-hover:scale-[1.05]
+                "
               />
 
-              {/* Hover Overlay - Black gradient bottom slide-up */}
+              {/* Dark Fade Overlay */}
               <div
-                className={`
-                  absolute bottom-0 left-0 right-0 h-0 group-hover:h-2/3
-                  bg-linear-to-t from-black/90 via-black/70 to-transparent
-                  backdrop-blur-sm transition-all duration-500 ease-out flex flex-col justify-end p-4
-                  overflow-hidden
-                `}
-              >
-                {/* Slide-up Content */}
-                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 ease-out opacity-0 group-hover:opacity-100">
-                  {/* Avatar + Username */}
-                  <div className="flex items-center gap-3 mb-2">
-                    {user.imageUrl ? (
-                      <Image
-                        src={user.imageUrl}
-                        alt={user.username}
-                        width={36}
-                        height={36}
-                        className="w-9 h-9 rounded-full ring-2 ring-white/50 object-cover shrink-0"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center ring-2 ring-white/50 shrink-0">
-                        <span className="text-xs font-bold text-white">
-                          {user.username?.charAt(0)?.toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-sm font-semibold text-white truncate">
-                        @{user.username}
-                      </p>
-                    </div>
-                  </div>
+                className="
+                absolute inset-0 
+                bg-gradient-to-t from-black/80 via-black/40 to-transparent
+                opacity-0 group-hover:opacity-100
+                transition-all duration-500
+              "
+              />
 
-                  {/* Prompt Preview */}
-                  <p className="text-white/90 text-sm leading-relaxed line-clamp-3">
-                    {img.prompt}
+              {/* Hover Info */}
+              <div
+                className="
+                  absolute bottom-0 left-0 right-0 p-5
+                  translate-y-8 group-hover:translate-y-0
+                  opacity-0 group-hover:opacity-100
+                  transition-all duration-500
+                "
+              >
+                {/* Avatar + Username */}
+                <div className="flex items-center gap-3 mb-2">
+                  {user.imageUrl ? (
+                    <Image
+                      src={user.imageUrl}
+                      width={40}
+                      height={40}
+                      className="
+                        w-10 h-10 rounded-full object-cover
+                      "
+                      alt="user"
+                    />
+                  ) : (
+                    <div
+                      className="
+                        w-10 h-10 rounded-full 
+                        bg-gradient-to-br from-purple-500 to-blue-600 
+                        flex items-center justify-center
+                        ring-2 ring-white/40 group-hover:ring-purple-400 transition-all
+                      "
+                    >
+                      <span className="text-sm font-bold">
+                        {user.username?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+
+                  <p className="text-white font-semibold text-sm">
+                    @{user.username}
                   </p>
                 </div>
-              </div>
 
-              {/* Top-right Corner - Always visible (subtle) */}
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="w-6 h-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
-                  <span className="text-xs font-bold text-gray-800">
-                    {user.username?.charAt(0)?.toUpperCase()}
-                  </span>
-                </div>
+                {/* Short Prompt */}
+                <p className="text-white/80 text-xs">{shortPrompt}</p>
               </div>
             </Link>
           );
