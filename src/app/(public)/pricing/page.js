@@ -6,7 +6,7 @@ import FullSkeleton from "./PricingSkeleton"
 
 // purchase links
 const BUY_PRO_LINK = "/checkout/pro"
-const BUY_FREE_LINK = "/checkout/free"
+const BUY_FREE_LINK = "/generate"
 
 export default function PricingPage() {
   const [loading, setLoading] = useState(true)

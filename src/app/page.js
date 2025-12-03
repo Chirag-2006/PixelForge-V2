@@ -76,8 +76,8 @@ export default function Home() {
         </section>
 
         {/* ---------- IMAGE GRID MOCKUP ----------- */}
-        <section className="mt-20 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        <section className="mt-20 grid grid-cols-2 sm:grid-cols-3  gap-4 max-w-5xl mx-auto">
+          {[1, 2, 3, 4, 5, 6,].map((i) => (
             <div
               key={i}
               className="rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500"

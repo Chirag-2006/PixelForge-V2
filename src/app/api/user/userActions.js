@@ -55,10 +55,11 @@ export async function getPublicUserProfile(userId) { // ✅ userId instead of us
           eq(images.isPublished, true)
         )
       )
-      .orderBy(images.createdAt);
+      .orderBy(desc(images.createdAt));
 
     return {
       user: {
+        fullName: user.fullName,
         username: user.username || userId.slice(-8), // Fallback to truncated ID
         imageUrl: user.avatar,
       },
