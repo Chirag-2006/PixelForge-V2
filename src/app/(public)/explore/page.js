@@ -124,7 +124,7 @@ export default function ExplorePage() {
               {/* Big High-Quality Image */}
               <Image
                 src={img.url}
-                alt={img.prompt}
+                alt={"Image"}
                 width={800}
                 height={1000}
                 className="

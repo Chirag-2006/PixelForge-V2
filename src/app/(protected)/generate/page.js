@@ -2,22 +2,25 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-// shadcn components
+// shadcn UI
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
 
 // icons
 import {
-  ChevronDown,
-  ChevronUp,
-  Download,
+  Loader2,
   RefreshCw,
   UploadCloud,
+  Wand2,
+  Sparkles,
+  Palette,
+  Settings,
 } from "lucide-react";
 
 export default function GeneratePage() {
@@ -25,27 +28,31 @@ export default function GeneratePage() {
   const router = useRouter();
 
   const [prompt, setPrompt] = useState("");
-  const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [imgLoading, setImgLoading] = useState(false);
 
   const [imageUrl, setImageUrl] = useState("");
-  const [imgLoading, setImgLoading] = useState(false);
   const [imageData, setImageData] = useState(null);
 
-  // 🟡 Page skeleton initial
+  // Controls (UI only)
+  const [quality, setQuality] = useState(80);
+  const [creativity, setCreativity] = useState(50);
+
+  // Smooth page load skeleton
   const [pageLoading, setPageLoading] = useState(true);
   useEffect(() => {
-    const t = setTimeout(() => setPageLoading(false), 700); // smooth effect
+    const t = setTimeout(() => setPageLoading(false), 700);
     return () => clearTimeout(t);
   }, []);
 
-  // Protect route
+  // Protect route if not logged in
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push("/?auth=login");
     }
   }, [isLoaded, isSignedIn, router]);
 
+  // Skeleton while page loads
   if (!isSignedIn || pageLoading) {
     return (
       <div className="p-10 space-y-6 animate-pulse">
@@ -58,7 +65,7 @@ export default function GeneratePage() {
     );
   }
 
-  // ▶️ Generate Image
+  // ▶ Generate (Backend untouched)
   const generate = async () => {
     if (!prompt.trim()) {
       toast.error("Prompt is required");
@@ -76,9 +83,6 @@ export default function GeneratePage() {
         body: JSON.stringify({ prompt }),
       });
 
-      console.log('res in gernerate page.js', res);
-      
-
       const data = await res.json();
 
       if (data.limitReached) {
@@ -87,34 +91,26 @@ export default function GeneratePage() {
         return;
       }
 
-      if (!res.ok) {
+      if (!res.ok || !data.imageUrl) {
         toast.error(data.error || "Error generating image");
         setLoading(false);
         return;
       }
 
-      if (!data.imageUrl) {
-        toast.error("Error generating image");
-        setLoading(false);
-        return;
-      }
-
       setImageData(data);
-
       setImageUrl(data.imageUrl);
-      toast.success("Image generated"); 
-    } catch (err) {
+
+      toast.success("Image generated successfully 🎉");
+    } catch {
       toast.error("Network error");
     } finally {
       setLoading(false);
     }
   };
 
-  // console.log('image data in generate page', imageData);
-
-  // ▶️ Publish
+  // ▶ Publish
   const publishImage = async () => {
-    if (!imageData.imageData?.[0]?.insertId) {
+    if (!imageData?.imageData?.[0]?.insertId) {
       toast.error("No image to publish");
       return;
     }
@@ -123,28 +119,22 @@ export default function GeneratePage() {
       const res = await fetch("/api/images/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageId: imageData.imageData?.[0]?.insertId}),
+        body: JSON.stringify({ imageId: imageData.imageData?.[0]?.insertId }),
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        toast.error(errorData.error || "Failed to publish");
+        toast.error("Failed to publish");
         return;
       }
 
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Image published successfully!");
-        router.push("/explore");
-      } else {
-        toast.error(data.error || "Unexpected error");
-      }
-    } catch (err) {
+      toast.success("Published successfully!");
+      router.push("/explore");
+    } catch {
       toast.error("Network error");
     }
   };
 
-  // ▶️ Download
+  // ▶️ Download Image
   // const downloadImage = () => {
   //    if (!imageUrl) {
   //   toast.error("No image to download");
@@ -159,110 +149,140 @@ export default function GeneratePage() {
   // };
 
   return (
-    <div className=" container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8">✨ Generate Your Image</h1>
+    <div className="container mx-auto p-6 pb-20">
+      {/* ---------- PAGE HEADER ---------- */}
+      <div className="flex items-center justify-center mb-10">
+        <h1 className="text-4xl font-extrabold tracking-tight">
+          Generate with <span className="text-purple-600">AI</span>
+        </h1>
 
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* LEFT SMALL AREA */}
-        <Card className="border border-gray-300 shadow-sm flex-1">
-          <CardHeader>
-            <h2 className="text-xl font-semibold">Enter your prompt</h2>
-          </CardHeader>
+        {/* <Button
+          variant="outline"
+          className="flex items-center gap-2 rounded-xl"
+        >
+          <Settings size={18} /> Advanced Settings
+        </Button> */}
+      </div>
 
-          <CardContent>
-            {/* Expandable textarea */}
-            {/* Expandable textarea like Google Gemini */}
-            <div className="relative">
-              <Textarea
-                value={prompt}
-                onChange={(e) => {
-                  setPrompt(e.target.value);
-                  if (e.target.value.length > 40 && !expanded) {
-                    setExpanded(false); // keep collapsed when long
-                  }
-                }}
-                placeholder="Describe your image..."
-                rows={expanded ? 6 : 3}
-                className={`text-base resize-none pr-10 transition-all duration-200 ${
-                  expanded ? "overflow-auto" : "overflow-hidden"
-                }`}
+      <div className="flex flex-col lg:flex-row gap-10">
+        {/* ---------- LEFT SIDE: Prompt + Controls ---------- */}
+        <Card className="w-full lg:w-1/3 shadow-lg border rounded-2xl p-6">
+          {/* BIG Premium Textarea */}
+          <div className="relative mt-2">
+            <label className="absolute -top-3 left-4 px-2 bg-white text-gray-600 text-sm">
+              Describe your image
+            </label>
+
+            <Textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="A cyberpunk samurai walking through neon Tokyo..."
+              rows={8} // ⬅️ increased height
+              className="resize-none text-[17px] rounded-xl border-2 min-h-[120px] focus:ring-2 focus:ring-purple-400 transition-all p-4 leading-relaxed"
+            />
+          </div>
+
+          {/* UI SLIDERS */}
+          <div className="mt-6 space-y-5">
+            {/* Quality */}
+            <div>
+              <p className="font-semibold flex items-center gap-2 mb-1">
+                <Sparkles size={18} /> Quality ({quality}%)
+              </p>
+              <Slider
+                value={[quality]}
+                onValueChange={(v) => setQuality(v[0])}
+                max={100}
+                className="w-full"
               />
-
-              {/* Show icon only when prompt > 40 characters */}
-              {prompt.length > 40 && (
-                <button
-                  className="absolute right-3 bottom-3 text-gray-500 hover:text-black"
-                  onClick={() => setExpanded(!expanded)}
-                >
-                  {expanded ? (
-                    <ChevronUp size={20} />
-                  ) : (
-                    <ChevronDown size={20} />
-                  )}
-                </button>
-              )}
             </div>
 
-            {/* Generate Button */}
-            <Button
-              onClick={generate}
-              disabled={loading}
-              className="w-full mt-4 py-4 text-lg"
-            >
-              {loading ? "Generating..." : "Generate"}
-            </Button>
-          </CardContent>
+            {/* Creativity */}
+            <div>
+              <p className="font-semibold flex items-center gap-2 mb-1">
+                <Wand2 size={18} /> Creativity ({creativity}%)
+              </p>
+              <Slider
+                value={[creativity]}
+                onValueChange={(v) => setCreativity(v[0])}
+                max={100}
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          {/* Generate Button */}
+          <Button
+            className={`w-full mt-6 py-8 text-lg rounded-xl bg-black hover:bg-gray-900 ${
+              loading && "opacity-50 cursor-not-allowed"
+            }`}
+            onClick={generate}
+            // disabled={loading}
+          >
+            {loading ? (
+              <div className="flex items-center gap-2 hover:cursor-not-allowed ">
+                <Loader2 className="animate-spin" size={20} />
+                Generating...
+              </div>
+            ) : (
+              <>
+                Generate Image <Palette size={20} />
+              </>
+            )}
+          </Button>
         </Card>
 
-        {/* RIGHT — BIG PREVIEW AREA */}
-        <Card className="border border-gray-300 shadow-sm p-4 min-h-[470px] flex flex-col items-center justify-center flex-2">
-          {/* IMAGE SKELETON */}
-          {!imageUrl && imgLoading && (
-            <div className="w-lg h-[512px] bg-gray-300 rounded-xl animate-pulse" />
+        {/* ---------- RIGHT SIDE: Image Preview ---------- */}
+        <Card className="flex-1 shadow-xl border rounded-2xl p-2 flex flex-col items-center justify-center min-h-[600px]">
+          {/* 360° Modern Loader */}
+          {!imageUrl && loading && (
+            <div className="flex flex-col items-center gap-4">
+              <RefreshCw
+                className="animate-spin text-purple-600"
+                size={70}
+                strokeWidth="1.5"
+              />
+              <p className="text-gray-500">Crafting your masterpiece...</p>
+            </div>
           )}
 
           {/* IMAGE */}
           {imageUrl && (
             <Image
               src={imageUrl}
-              width={512}
-              height={512}
-              alt="Generated Image"
+              width={600}
+              height={600}
+              alt="Generated AI Image"
               unoptimized
               onLoad={() => setImgLoading(false)}
-              className="rounded-xl shadow-lg"
+              className="
+                rounded-xl shadow-xl
+                animate-[fadeIn_0.6s_ease-out]
+              "
             />
           )}
 
-          {/* BUTTON GROUP */}
-          {imageUrl && !imgLoading && (
-            <div className="flex gap-3 mt-5 w-full justify-center">
+          {/* ACTION BUTTONS */}
+          {imageUrl && !loading && (
+            <div className="flex gap-4 mt-6 px-6 w-full">
               <Button
+                className="bg-green-600 hover:bg-green-700 rounded-xl p-5 w-1/2"
                 onClick={publishImage}
-                className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
               >
                 <UploadCloud size={18} /> Publish
               </Button>
 
               <Button
+                className="bg-blue-600 hover:bg-blue-700 rounded-xl w-1/2 p-5"
                 onClick={generate}
-                className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
               >
                 <RefreshCw size={18} /> Regenerate
               </Button>
-
-              {/* <Button
-                onClick={downloadImage}
-                className="bg-black hover:bg-gray-800 flex items-center gap-2"
-              >
-                <Download size={18} /> Download
-              </Button> */}
             </div>
           )}
 
-          {/* No Image Yet */}
-          {!imageUrl && !imgLoading && (
-            <p className="text-gray-500 text-lg">
+          {!imageUrl && !loading && (
+            <p className="text-gray-500 mt-10 text-lg">
               Your generated image will appear here...
             </p>
           )}
