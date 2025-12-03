@@ -62,7 +62,7 @@ export default function ExplorePage() {
             .map((_, i) => (
               <div
                 key={i}
-                className="aspect-[4/5] bg-gray-800/30 rounded-2xl animate-pulse"
+                className="aspect-4/5 bg-gray-800/30 rounded-2xl animate-pulse"
               ></div>
             ))}
         </div>
@@ -85,7 +85,7 @@ export default function ExplorePage() {
     <div className="container mx-auto p-6">
       {/* Heading */}
       <div className="mb-12 text-center">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold bg-linear-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">
           Explore Library
         </h1>
         <p className="text-gray-400 mt-2 tracking-wide">
@@ -96,7 +96,7 @@ export default function ExplorePage() {
       {/* Larger Images Grid (Library style) */}
       <div
         className="
-        grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 
+        grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 
         gap-8
       "
       >
@@ -114,7 +114,7 @@ export default function ExplorePage() {
               key={img.id}
               href={`/u/${img.ownerId}`}
               className="
-                group block aspect-[4/5] relative overflow-hidden
+                group block aspect-4/5 relative overflow-hidden
                 rounded-2xl border border-gray-800/40
                 hover:border-purple-400/50
                 hover:shadow-[0_0_40px_rgba(139,92,246,0.25)]
@@ -138,7 +138,7 @@ export default function ExplorePage() {
               <div
                 className="
                 absolute inset-0 
-                bg-gradient-to-t from-black/80 via-black/40 to-transparent
+                bg-linear-to-t from-black/80 via-black/40 to-transparent
                 opacity-0 group-hover:opacity-100
                 transition-all duration-500
               "
@@ -169,7 +169,7 @@ export default function ExplorePage() {
                     <div
                       className="
                         w-10 h-10 rounded-full 
-                        bg-gradient-to-br from-purple-500 to-blue-600 
+                        bg-linear-to-br from-purple-500 to-blue-600 
                         flex items-center justify-center
                         ring-2 ring-white/40 group-hover:ring-purple-400 transition-all
                       "
