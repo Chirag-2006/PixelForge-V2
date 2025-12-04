@@ -38,7 +38,9 @@ export async function publishImageById(imageId) {
       .set({ isPublished: true })
       .where(eq(images.id, imageId), eq(images.ownerId, userId));
 
-    return { message: "Image published", success: true, data };
+    console.log("data in image action", data);
+
+    return { message: "Image published", success: true };
   } catch (error) {
     console.error("Failed to publish image:", error);
     return NextResponse.json(
@@ -111,4 +113,26 @@ export async function getImageDatabyId(imageId) { // InsertId
     console.error("Failed to get image by ID:", error);
     return { error: "Failed to get image by ID" };
   }
-} 
+}
+
+export async function deleteImageById(imageId) {
+  try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return { error: "Unauthorized" };
+    }
+    if (!imageId) {
+      return { error: "Invalid image ID" };
+    }
+
+    await db
+      .delete(images)
+      .where(eq(images.id, imageId), eq(images.ownerId, userId));
+
+    return { message: "Image Deleted Successfully", success: true };
+  } catch (error) {
+    console.error("Failed to delete image:", error);
+    return { error: "Failed to delete image", success: false };
+  }
+}
