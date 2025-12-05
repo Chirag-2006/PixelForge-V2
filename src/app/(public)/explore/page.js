@@ -141,7 +141,7 @@ export default function ExplorePage() {
       <div
         className="
         grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 
-        gap-8
+        gap-2 md:gap-8
       "
       >
         {images.map((img) => {
@@ -151,7 +151,7 @@ export default function ExplorePage() {
               key={img.id}
               href={`/u/${img.ownerId}`}
               className="
-    group relative block aspect-4/5 overflow-hidden
+    group relative block aspect-9/14 md:aspect-4/5 overflow-hidden
     rounded-2xl border border-gray-800/40
     hover:border-purple-400/50
     hover:shadow-[0_0_40px_rgba(139,92,246,0.25)]

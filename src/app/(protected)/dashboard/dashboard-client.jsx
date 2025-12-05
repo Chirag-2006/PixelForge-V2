@@ -224,7 +224,7 @@ export default function DashboardClientPage() {
 
         {/* Created */}
         <TabsContent value="created" className="mt-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2 md:gap-5">
             {created.map((img) => (
               <ImageCard
                 key={img.id}
@@ -239,7 +239,7 @@ export default function DashboardClientPage() {
 
         {/* Published */}
         <TabsContent value="published" className="mt-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2 md:gap-5">
             {published.map((img) => (
               <ImageCard
                 key={img.id}
@@ -253,7 +253,7 @@ export default function DashboardClientPage() {
 
         {/* Private */}
         <TabsContent value="private" className="mt-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2 md:gap-5">
             {privateImgs.map((img) => (
               <ImageCard
                 key={img.id}

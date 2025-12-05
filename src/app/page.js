@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useClerk } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,9 +32,12 @@ import {
 } from "@/components/ui/accordion";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import FooterCol from "@/components/home/footerCols";
+import { Skeleton } from "@/components/ui/skeleton";
+import SocialIcon from "@/components/home/SocialIcon";
 
 export default function Home() {
   const { openSignIn } = useClerk();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -45,6 +48,35 @@ export default function Home() {
       });
     }
   }, [openSignIn]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 700);
+    return () => clearTimeout(t);
+  }, []);
+  if (loading) {
+    return (
+      <main className="min-h-[90vh] pt-24 px-6 animate-pulse">
+        {/* HERO HEADING */}
+        <section className="text-center max-w-3xl mx-auto">
+          <Skeleton className="h-12 w-3/4 mx-auto rounded-lg" />
+          <Skeleton className="h-5 w-2/3 mx-auto mt-4 rounded-md" />
+
+          {/* BUTTONS */}
+          <div className="mt-8 flex items-center flex-col sm:flex-row justify-center gap-4">
+            <Skeleton className="h-14 w-48 rounded-xl" />
+            <Skeleton className="h-14 w-48 rounded-xl" />
+          </div>
+        </section>
+
+        {/* IMAGE GRID (first row only) */}
+        <section className="mt-20 grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-5xl mx-auto">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-64 rounded-xl" />
+          ))}
+        </section>
+      </main>
+    );
+  }
 
   return (
     <>
@@ -77,7 +109,7 @@ export default function Home() {
 
         {/* ---------- IMAGE GRID MOCKUP ----------- */}
         <section className="mt-20 grid grid-cols-2 sm:grid-cols-3  gap-4 max-w-5xl mx-auto">
-          {[1, 2, 3, 4, 5, 6,].map((i) => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
               className="rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500"
@@ -220,10 +252,27 @@ export default function Home() {
           </div>
         </section>
 
+        {/* 🌟 FOLLOW ME SECTION */}
+        <section className="mt-32 max-w-3xl mx-auto text-center">
+          {/* Heading */}
+          <h2 className="text-4xl font-bold mb-6">
+            Follow <span className="text-purple-500">Me</span>
+          </h2>
+
+          {/* Description (optional) */}
+          <p className="text-gray-600 max-w-md mx-auto mb-10">
+            Stay connected and explore more updates, projects, and
+            behind-the-scenes work.
+          </p>
+
+          {/* Social Icons */}
+          <SocialIcon />
+        </section>
+
         {/* ❓ FAQ — SHADCN ACCORDION */}
         <section className="mt-32 max-w-3xl mx-auto">
           <h2 className="text-center text-4xl font-bold mb-10">
-            Frequently Asked <span className="text-purple-500">Questions</span>
+            Frequently Asked <span className="text-blue-600">Questions</span>
           </h2>
 
           <Accordion type="single" collapsible className="space-y-4">
@@ -299,8 +348,19 @@ export default function Home() {
           />
         </div>
 
-        <p className="text-center text-gray-500 text-xs mt-10">
-          © {new Date().getFullYear()} pixelForge · All rights reserved.
+        <p className="text-center text-sm text-gray-400 mt-10">
+          © {new Date().getFullYear()}{" "}
+          <span className="font-semibold text-white">pixelForge</span> · All
+          rights reserved.
+          <br className="sm:hidden" />
+          <span className="opacity-80"> Built & crafted by Chirag · </span>
+          <Link
+            href="https://github.com/Chirag-2006/PixelForge-V2"
+            target="_blank"
+            className="text-gray-200 hover:text-white hover:underline underline-offset-4 transition-colors"
+          >
+            View Project on GitHub →
+          </Link>
         </p>
       </footer>
     </>

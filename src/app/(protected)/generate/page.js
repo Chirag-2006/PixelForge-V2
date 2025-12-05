@@ -2,17 +2,27 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-// shadcn UI
+// ShadCN UI
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// icons
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+// Icons
 import {
   Loader2,
   RefreshCw,
@@ -20,55 +30,78 @@ import {
   Wand2,
   Sparkles,
   Palette,
-  Settings,
 } from "lucide-react";
 
 export default function GeneratePage() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
 
+  // MAIN STATES
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [imgLoading, setImgLoading] = useState(false);
-
   const [imageUrl, setImageUrl] = useState("");
   const [imageData, setImageData] = useState(null);
 
-  // Controls (UI only)
+  // UI CONTROLS
   const [quality, setQuality] = useState(80);
   const [creativity, setCreativity] = useState(50);
 
-  // Smooth page load skeleton
+  // USER PLAN + LIMIT
+  const [userPlan, setUserPlan] = useState("FREE");
+  const [generationCount, setGenerationCount] = useState(0);
+
+  // Upgrade Dialog
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
+  // Page skeleton
   const [pageLoading, setPageLoading] = useState(true);
+
   useEffect(() => {
     const t = setTimeout(() => setPageLoading(false), 700);
     return () => clearTimeout(t);
   }, []);
 
-  // Protect route if not logged in
+  // GET USER PLAN + LIMIT FROM BACKEND
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const res = await fetch("/api/user", { method: "GET" });
+        const data = await res.json();
+
+        setUserPlan(data.plan);
+        setGenerationCount(data.generationCount);
+      } catch (err) {
+        console.log("Error loading user:", err);
+      }
+    }
+    loadUser();
+  }, []);
+
+  // PROTECT ROUTE
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push("/?auth=login");
     }
   }, [isLoaded, isSignedIn, router]);
 
-  // Skeleton while page loads
-  if (!isSignedIn || pageLoading) {
-    return (
-      <div className="p-10 space-y-6 animate-pulse">
-        <div className="h-8 w-64 bg-gray-300 rounded-md" />
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="h-80 flex-1 bg-gray-300 rounded-xl" />
-          <div className="h-80 flex-2 bg-gray-300 rounded-xl" />
-        </div>
-      </div>
-    );
-  }
+  const limitReached = userPlan === "FREE" && generationCount >= 5;
 
-  // ▶ Generate (Backend untouched)
+  // ▶ GENERATE HANDLER
   const generate = async () => {
     if (!prompt.trim()) {
-      toast.error("Prompt is required");
+      toast.error("Prompt is required!");
+      return;
+    }
+
+    if (prompt.trim().length < 3) {
+      toast.error("Minimum 3 characters required!");
+      return;
+    }
+
+    // BLOCK REQUEST IF LIMIT EXCEEDED (NO BACKEND CALL)
+    if (limitReached) {
+      setShowUpgrade(true);
       return;
     }
 
@@ -87,7 +120,6 @@ export default function GeneratePage() {
 
       if (data.limitReached) {
         toast.error("Free limit reached!");
-        setLoading(false);
         return;
       }
 
@@ -100,15 +132,18 @@ export default function GeneratePage() {
       setImageData(data);
       setImageUrl(data.imageUrl);
 
+      // UPDATE LOCAL COUNT UI WITHOUT RELOAD
+      setGenerationCount((prev) => prev + 1);
+
       toast.success("Image generated successfully 🎉");
-    } catch {
+    } catch (err) {
       toast.error("Network error");
     } finally {
       setLoading(false);
     }
   };
 
-  // ▶ Publish
+  // ▶ PUBLISH IMAGE
   const publishImage = async () => {
     if (!imageData?.imageData?.[0]?.insertId) {
       toast.error("No image to publish");
@@ -148,43 +183,54 @@ export default function GeneratePage() {
   // document.body.removeChild(link);
   // };
 
+  // SKELETON LOADING
+  if (!isSignedIn || pageLoading) {
+    return (
+      <div className="p-10 space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <div className="flex flex-col md:flex-row gap-8">
+          <Skeleton className="h-80 flex-1" />
+          <Skeleton className="h-80 flex-1" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 pb-20">
-      {/* ---------- PAGE HEADER ---------- */}
+      {/* TITLE */}
       <div className="flex items-center justify-center mb-10">
         <h1 className="text-4xl font-extrabold tracking-tight">
           Generate with <span className="text-purple-600">AI</span>
         </h1>
-
-        {/* <Button
-          variant="outline"
-          className="flex items-center gap-2 rounded-xl"
-        >
-          <Settings size={18} /> Advanced Settings
-        </Button> */}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-10">
-        {/* ---------- LEFT SIDE: Prompt + Controls ---------- */}
-        <Card className="w-full lg:w-1/3 shadow-lg border rounded-2xl p-6">
-          {/* BIG Premium Textarea */}
+        {/* LEFT SIDE */}
+        <Card className="w-full lg:w-1/3 shadow-lg border rounded-2xl p-6 relative">
           <div className="relative mt-2">
             <label className="absolute -top-3 left-4 px-2 bg-white text-gray-600 text-sm">
               Describe your image
             </label>
 
             <Textarea
+              disabled={loading}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="A cyberpunk samurai walking through neon Tokyo..."
-              rows={8} // ⬅️ increased height
-              className="resize-none text-[17px] rounded-xl border-2 min-h-[120px] focus:ring-2 focus:ring-purple-400 transition-all p-4 leading-relaxed"
+              rows={8}
+              className="resize-none text-[17px] rounded-xl border-2 min-h-[120px] p-4"
             />
+            {userPlan === "FREE" && (
+              <p className="text-right text-[18px] text-purple-600 mt-2 font-medium">
+                ({generationCount}/5) images generated
+              </p>
+            )}
           </div>
 
-          {/* UI SLIDERS */}
-          <div className="mt-6 space-y-5">
-            {/* Quality */}
+          {/* SLIDERS */}
+          <div className="mt-6 space-y-5 opacity-100">
+            {/* QUALITY */}
             <div>
               <p className="font-semibold flex items-center gap-2 mb-1">
                 <Sparkles size={18} /> Quality ({quality}%)
@@ -193,11 +239,12 @@ export default function GeneratePage() {
                 value={[quality]}
                 onValueChange={(v) => setQuality(v[0])}
                 max={100}
-                className="w-full"
+                disabled={loading} // 🔥 prevents changes while generating
+                className={loading ? "cursor-not-allowed opacity-60" : ""}
               />
             </div>
 
-            {/* Creativity */}
+            {/* CREATIVITY */}
             <div>
               <p className="font-semibold flex items-center gap-2 mb-1">
                 <Wand2 size={18} /> Creativity ({creativity}%)
@@ -206,24 +253,34 @@ export default function GeneratePage() {
                 value={[creativity]}
                 onValueChange={(v) => setCreativity(v[0])}
                 max={100}
-                className="w-full"
+                disabled={loading} // 🔥 prevents changes
+                className={loading ? "cursor-not-allowed opacity-60" : ""}
               />
             </div>
           </div>
 
-          {/* Generate Button */}
+          {/* BUTTON */}
           <Button
-            className={`w-full mt-6 py-8 text-lg rounded-xl bg-black hover:bg-gray-900 ${
-              loading && "opacity-50 cursor-not-allowed"
-            }`}
-            onClick={generate}
             // disabled={loading}
+            className={`
+    w-full mt-6 py-8 text-lg rounded-xl font-semibold shadow-sm transition-all duration-300 
+    ${
+      limitReached
+        ? "bg-purple-600 hover:bg-purple-700 text-white"
+        : "bg-black hover:bg-gray-900 text-white"
+    }
+    ${loading && "opacity-50 cursor-not-allowed"}
+  `}
+            onClick={limitReached ? () => setShowUpgrade(true) : generate}
           >
-            {loading ? (
-              <div className="flex items-center gap-2 hover:cursor-not-allowed ">
-                <Loader2 className="animate-spin" size={20} />
-                Generating...
-              </div>
+            {limitReached ? (
+              <span className="flex items-center justify-center gap-2 text-[18px]">
+                ⚡ Upgrade to Pro
+              </span>
+            ) : loading ? (
+              <span className="flex items-center gap-2 cursor-not-allowed">
+                <Loader2 className="animate-spin" size={20} /> Generating...
+              </span>
             ) : (
               <>
                 Generate Image <Palette size={20} />
@@ -232,9 +289,8 @@ export default function GeneratePage() {
           </Button>
         </Card>
 
-        {/* ---------- RIGHT SIDE: Image Preview ---------- */}
+        {/* RIGHT SIDE */}
         <Card className="flex-1 shadow-xl border rounded-2xl p-2 flex flex-col items-center justify-center min-h-[600px]">
-          {/* 360° Modern Loader */}
           {!imageUrl && loading && (
             <div className="flex flex-col items-center gap-4">
               <RefreshCw
@@ -246,7 +302,6 @@ export default function GeneratePage() {
             </div>
           )}
 
-          {/* IMAGE */}
           {imageUrl && (
             <Image
               src={imageUrl}
@@ -255,14 +310,10 @@ export default function GeneratePage() {
               alt="Generated AI Image"
               unoptimized
               onLoad={() => setImgLoading(false)}
-              className="
-                rounded-xl shadow-xl
-                animate-[fadeIn_0.6s_ease-out]
-              "
+              className="rounded-xl shadow-xl animate-[fadeIn_0.6s_ease-out]"
             />
           )}
 
-          {/* ACTION BUTTONS */}
           {imageUrl && !loading && (
             <div className="flex gap-4 mt-6 px-6 w-full">
               <Button
@@ -288,6 +339,52 @@ export default function GeneratePage() {
           )}
         </Card>
       </div>
+
+      {/* UPGRADE DIALOG */}
+      {userPlan === "FREE" && (
+        <Dialog open={showUpgrade} onOpenChange={setShowUpgrade}>
+          <DialogContent className="rounded-xl md:max-w-md max-w-xs mx-auto">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold">
+                Upgrade Required ⚡
+              </DialogTitle>
+
+              <p className="text-sm text-gray-500 mt-1">
+                You have reached your free image generation limit. Upgrade to
+                Pro for unlimited access and faster AI generation.
+              </p>
+            </DialogHeader>
+
+            <div className="flex gap-3 justify-end mt-6">
+              {/* CANCEL (Desktop only) */}
+              <Button
+                variant="outline"
+                className="w-full hidden md:block md:w-auto"
+                onClick={() => setShowUpgrade(false)}
+              >
+                Cancel
+              </Button>
+
+              {/* UPGRADE BUTTON */}
+              <Button
+                className="bg-purple-600 text-white w-full md:w-auto rounded-xl"
+                onClick={() => router.push("/pricing")}
+              >
+                Upgrade Now 🚀
+              </Button>
+            </div>
+
+            {/* CANCEL FOR MOBILE BELOW BUTTONS (Optional, UX better) */}
+            <Button
+              variant="outline"
+              className="w-full md:hidden mt-3"
+              onClick={() => setShowUpgrade(false)}
+            >
+              Cancel
+            </Button>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

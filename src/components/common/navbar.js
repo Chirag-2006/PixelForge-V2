@@ -7,6 +7,7 @@ import { useAuth } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { Skeleton } from "../ui/skeleton";
 
 export default function Navbar() {
   const { openSignIn } = useClerk();
@@ -30,6 +31,28 @@ export default function Navbar() {
     after:bg-black after:scale-x-0 after:transition after:duration-300
     hover:after:scale-x-100
   `;
+
+  if (!isLoaded && !isSignedIn) {
+    return (
+      <header className="w-full bg-white/40 backdrop-blur-md border-b border-gray-200/40 sticky top-0 z-50">
+        <div className="container mx-auto flex justify-between items-center px-6 py-4">
+          {/* Logo */}
+          <Skeleton className="h-7 w-32 rounded-md" />
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center gap-6">
+            <Skeleton className="h-5 w-20" /> {/* Explore */}
+            <Skeleton className="h-5 w-20" /> {/* Pricing */}
+            <Skeleton className="h-9 w-24 rounded-md" /> {/* Login */}
+          </div>
+
+          {/* Mobile Hamburger */}
+          <Skeleton className="h-6 w-6 rounded-md md:hidden" />
+        </div>
+      </header>
+    );
+  }
+
 
   return (
     <header
@@ -115,20 +138,36 @@ export default function Navbar() {
       {/* Mobile Menu Dropdown */}
       {mobileOpen && (
         <div className="md:hidden bg-white/70 backdrop-blur-lg p-6 border-t flex flex-col gap-6 text-sm">
-          <Link className={linkClass("/explore")} href="/explore" onClick={(e) => setMobileOpen(false)}>
+          <Link
+            className={linkClass("/explore")}
+            href="/explore"
+            onClick={(e) => setMobileOpen(false)}
+          >
             Explore
           </Link>
 
-          <Link className={linkClass("/pricing")} href="/pricing" onClick={(e) => setMobileOpen(false)}>
+          <Link
+            className={linkClass("/pricing")}
+            href="/pricing"
+            onClick={(e) => setMobileOpen(false)}
+          >
             Pricing
           </Link>
 
           {isSignedIn && (
             <>
-              <Link className={linkClass("/generate")} href="/generate">
+              <Link
+                className={linkClass("/generate")}
+                href="/generate"
+                onClick={(e) => setMobileOpen(false)}
+              >
                 Generate
               </Link>
-              <Link className={linkClass("/dashboard")} href="/dashboard">
+              <Link
+                className={linkClass("/dashboard")}
+                href="/dashboard"
+                onClick={(e) => setMobileOpen(false)}
+              >
                 Dashboard
               </Link>
             </>
