@@ -55,26 +55,26 @@ export default function GeneratePage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   // Page skeleton
-  const [pageLoading, setPageLoading] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setPageLoading(false), 700);
-    return () => clearTimeout(t);
-  }, []);
+  const [pageLoading, setPageLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // GET USER PLAN + LIMIT FROM BACKEND
   useEffect(() => {
     async function loadUser() {
+      setPageLoading(true);
       try {
-        const res = await fetch("/api/user", { method: "GET" });
+        const res = await fetch("/api/user");
         const data = await res.json();
 
         setUserPlan(data.plan);
         setGenerationCount(data.generationCount);
       } catch (err) {
         console.log("Error loading user:", err);
+      } finally {
+        setPageLoading(false); // ⭐ STOP LOADING ONLY AFTER USER DATA LOADED
       }
     }
+
     loadUser();
   }, []);
 
@@ -143,18 +143,23 @@ export default function GeneratePage() {
     }
   };
 
+  // console.log("image data in genrate page", imageData);
+
   // ▶ PUBLISH IMAGE
   const publishImage = async () => {
-    if (!imageData?.imageData?.[0]?.insertId) {
+    const insertedId = imageData?.imageData?.[0]?.id;
+
+    if (!insertedId) {
       toast.error("No image to publish");
       return;
     }
+    setUploadingImage(true); // ⭐ start loading
 
     try {
       const res = await fetch("/api/images/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageId: imageData.imageData?.[0]?.insertId }),
+        body: JSON.stringify({ imageId: insertedId }),
       });
 
       if (!res.ok) {
@@ -166,6 +171,8 @@ export default function GeneratePage() {
       router.push("/explore");
     } catch {
       toast.error("Network error");
+    } finally {
+      setUploadingImage(false); // ⭐ stop loading
     }
   };
 
@@ -319,8 +326,18 @@ export default function GeneratePage() {
               <Button
                 className="bg-green-600 hover:bg-green-700 rounded-xl p-5 w-1/2"
                 onClick={publishImage}
+                disabled={uploadingImage}
               >
-                <UploadCloud size={18} /> Publish
+                {uploadingImage ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="animate-spin" size={18} />
+                    Publishing…
+                  </span>
+                ) : (
+                  <>
+                    <UploadCloud size={18} /> Publish
+                  </>
+                )}
               </Button>
 
               <Button

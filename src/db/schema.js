@@ -1,42 +1,48 @@
-import {
-  mysqlTable,
-  varchar,
-  int,
-  boolean,
-  timestamp,
-  mysqlEnum,
-} from "drizzle-orm/mysql-core";
+import { 
+  pgTable, 
+  varchar, 
+  integer, 
+  boolean, 
+  timestamp, 
+  pgEnum 
+} from "drizzle-orm/pg-core";
+
+// -----------------------
+// ENUM: plan (FREE / PRO)
+// -----------------------
+export const planEnum = pgEnum("plan", ["FREE", "PRO"]);
 
 // -----------------------
 // USERS TABLE
 // -----------------------
-export const users = mysqlTable("users", {
-  id: varchar("id", { length: 255 }).primaryKey(), // Clerk userId
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey(),            // Clerk userId
 
-  email: varchar("email", { length: 255 }), // Do NOT make unique
-  username: varchar("username", { length: 255 }),
-  fullName: varchar("full_name", { length: 255 }),
-  avatar: varchar("avatar", { length: 500 }),
+  email: varchar("email"),                   // keep simple
+  username: varchar("username"),
+  fullName: varchar("full_name"),
+  avatar: varchar("avatar"),
 
-  // Best practice: ENUM instead of boolean
-  plan: mysqlEnum("plan", ["FREE", "PRO"]).default("FREE"),
+  plan: planEnum("plan").default("FREE"),
 
-  generationCount: int("generation_count").default(0),
+  generationCount: integer("generation_count").default(0),
 
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
 });
 
 // -----------------------
 // IMAGES TABLE
 // -----------------------
-export const images = mysqlTable("images", {
-  id: int("id", { length: 255 }).primaryKey().autoincrement(),
-  ownerId: varchar("owner_id", { length: 255 }).notNull(),
-  url: varchar("url", { length: 2000 }).notNull(),
-  prompt: varchar("prompt", { length: 2000 }),
+export const images = pgTable("images", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+
+  ownerId: varchar("owner_id").notNull(),
+  url: varchar("url").notNull(),
+  prompt: varchar("prompt"),
+
   isPublished: boolean("is_published").default(false),
-  
+
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
 });

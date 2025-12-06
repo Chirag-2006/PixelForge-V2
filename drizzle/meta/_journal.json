@@ -1,33 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1764162157233,
-      "tag": "0000_wonderful_black_knight",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1764162266900,
-      "tag": "0001_chief_wendigo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1764165485506,
-      "tag": "0002_worthless_reavers",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1764421277274,
-      "tag": "0003_white_cargill",
+      "version": "7",
+      "when": 1765010400661,
+      "tag": "0000_true_lake",
       "breakpoints": true
     }
   ]

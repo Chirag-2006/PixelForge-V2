@@ -89,36 +89,26 @@ export default function ExplorePage() {
   }
 
   /* ⭐ Modern Time Ago function */
-  function timeAgo(dateString) {
-    const now = new Date();
+  function timeAgo(utcString) {
+    const past = new Date(utcString);
 
-    // 🛑 Drizzle returns UTC timestamps → convert to local time
-    const past = new Date(dateString);
-
-    // Convert UTC → Local time correctly
-    const localPast = new Date(
-      past.getTime() + past.getTimezoneOffset() * 60000
+    // Convert UTC → Indian time
+    const indiaTime = new Date(
+      past.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
     );
 
-    let diff = Math.floor((now - localPast) / 1000); // seconds
+    const now = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    );
 
-    // 🛑 Prevent negative time
-    if (diff < 0) diff = 0;
+    let diff = Math.floor((now - indiaTime) / 1000); // seconds
 
-    // < 1 min → seconds
     if (diff < 60) return `${diff}s ago`;
-
-    // < 1 hour → minutes
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-
-    // < 24 hours → hours
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-
-    // < 7 days → days
     if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
 
-    // else → Date format
-    return localPast.toLocaleDateString("en-US", {
+    return indiaTime.toLocaleDateString("en-IN", {
       month: "short",
       day: "numeric",
     });
@@ -246,7 +236,11 @@ export default function ExplorePage() {
 
                   <span className="text-white/60 text-[11px] right-0">
                     Publish on{" "}
-                    {new Date(img.updatedAt).toLocaleDateString("en-US", {
+                    {new Date(
+                      new Date(img.updatedAt).toLocaleString("en-US", {
+                        timeZone: "Asia/Kolkata",
+                      })
+                    ).toLocaleDateString("en-IN", {
                       month: "short",
                       day: "numeric",
                     })}

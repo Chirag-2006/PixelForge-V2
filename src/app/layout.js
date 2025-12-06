@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 const ogImage = "https://res.cloudinary.com/ddrrc7kbh/image/upload/v1764928595/wmremove-transformed_lj1gsf.png";
 
-// ⭐ Full SEO Metadata Added
+// ⭐ Full SEO Metadata (themeColor removed)
 export const metadata = {
   title: "pixelForge – AI Image Generator | Create Stunning AI Images",
   description:
@@ -32,12 +32,12 @@ export const metadata = {
   ],
   authors: [{ name: "Chirag Arya" }],
   creator: "Chirag Arya",
-  metadataBase: new URL("https://YOUR_DOMAIN.com"), // ⭐ apni domain lagana mat bhoolna
+  metadataBase: new URL("https://YOUR_DOMAIN.com"),
 
   openGraph: {
     title: "pixelForge – Generate Stunning AI Images Instantly",
     description:
-      "Create high-quality AI images using our advanced AI generator. No complicated setup — just write a prompt and generate!",
+      "Create high-quality AI images using our advanced AI generator. Just write a prompt and generate!",
     url: "https://YOUR_DOMAIN.com",
     siteName: "pixelForge",
     images: [
@@ -62,7 +62,10 @@ export const metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+};
 
+// ⭐ FIX: themeColor MUST be defined inside 'viewport'
+export const viewport = {
   themeColor: "#00ADB5",
 };
 
@@ -70,9 +73,7 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <Toaster position="top-center" reverseOrder={false} />
           <Navbar />
           {children}

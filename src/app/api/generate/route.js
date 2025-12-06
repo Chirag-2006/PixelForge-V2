@@ -102,7 +102,7 @@ export async function POST(req) {
     // 7. UPDATE GENERATION COUNT
     await db
       .update(users)
-      .set({ generationCount: user.generationCount + 1 })
+      .set({ generationCount: user.generationCount + 1, updatedAt: new Date() })
       .where(eq(users.id, userId));
 
     // 8. SEND SUCCESS RESPONSE

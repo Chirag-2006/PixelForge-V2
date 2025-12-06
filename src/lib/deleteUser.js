@@ -14,7 +14,7 @@ export async function deleteUserFromDB(userId) {
     // 2. Delete user record
     await db.delete(users).where(eq(users.id, userId));
 
-    console.log("User + images deleted from DB:", userId);
+    // console.log("User + images deleted from DB:", userId);
 
     return { success: true };
   } catch (error) {

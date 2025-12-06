@@ -79,13 +79,13 @@ export default function DashboardClientPage() {
     setPublishId(id);
     setPublishModalOpen(true);
 
-    console.log("publish id: ", id);
+    // console.log("publish id: ", id);
   };
 
   // Publish Image Handling
   const publishConfirm = async () => {
     try {
-      console.log("publish id: ", publishId);
+      // console.log("publish id: ", publishId);
       const data = await publishImageById(publishId);
 
       if (!data.success) {
@@ -116,12 +116,12 @@ export default function DashboardClientPage() {
   const confirmDelete = (id) => {
     setDeleteId(id);
     setDeleteModalOpen(true);
-    console.log("delete id:", id);
+    // console.log("delete id:", id);
   };
 
   // Perform Delete
   const performDelete = async () => {
-    console.log("delete id:", deleteId);
+    // console.log("delete id:", deleteId);
     const data = await deleteImageById(deleteId);
 
     if (data.error) {

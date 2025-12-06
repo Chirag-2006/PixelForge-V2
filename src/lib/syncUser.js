@@ -10,20 +10,16 @@ export async function syncUserToDB(clerkUser) {
 
   // console.log("clerkUser Syncing →", clerkUser);
 
-  const email =
-    clerkUser?.email_addresses?.[0]?.email_address ?? "";
+  const email = clerkUser?.email_addresses?.[0]?.email_address ?? "";
 
-  const fullName =
-    `${clerkUser?.first_name || ""} ${clerkUser?.last_name || ""}`.trim();
+  const fullName = `${clerkUser?.first_name || ""} ${
+    clerkUser?.last_name || ""
+  }`.trim();
 
   const username =
-    clerkUser?.username ||
-    generateUsername(clerkUser?.first_name || "user");
+    clerkUser?.username || generateUsername(clerkUser?.first_name || "user");
 
-  const avatar =
-    clerkUser?.image_url ||
-    clerkUser?.avatar_url ||
-    "";
+  const avatar = clerkUser?.image_url || clerkUser?.avatar_url || "";
 
   try {
     const existing = await db
@@ -50,6 +46,7 @@ export async function syncUserToDB(clerkUser) {
           email,
           fullName,
           avatar,
+          updatedAt: new Date(),
         })
         .where(eq(users.id, clerkUser.id));
     }

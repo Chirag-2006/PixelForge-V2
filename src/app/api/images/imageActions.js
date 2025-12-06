@@ -11,11 +11,14 @@ export async function saveImageToDB({ ownerId, prompt, imageUrl }) {
     if (!ownerId || !prompt || !imageUrl) {
       return { error: "Missing required data" };
     }
-    return await db.insert(images).values({
-      ownerId,
-      prompt,
-      url: imageUrl,
-    });
+    return await db
+      .insert(images)
+      .values({
+        ownerId,
+        prompt,
+        url: imageUrl,
+      })
+      .returning({ id: images.id });
   } catch (error) {
     console.error("Failed to save image:", error);
     return { error: "Failed to save image" };
@@ -35,10 +38,10 @@ export async function publishImageById(imageId) {
 
     const data = await db
       .update(images)
-      .set({ isPublished: true })
+      .set({ isPublished: true, updatedAt: new Date() })
       .where(eq(images.id, imageId), eq(images.ownerId, userId));
 
-    console.log("data in image action", data);
+    // console.log("data in image action", data);
 
     return { message: "Image published", success: true };
   } catch (error) {
@@ -103,7 +106,8 @@ export async function getPublicImagesByUserId(userId) {
   }
 }
 
-export async function getImageDatabyId(imageId) { // InsertId
+export async function getImageDatabyId(imageId) {
+  // InsertId
   try {
     if (!imageId) {
       return { error: "Image ID is required" };
