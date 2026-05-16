@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { getOptimizedCloudinaryUrl, blurDataURL } from "@/lib/utils";
+import { surprisePrompts } from "@/data/surpriseMe";
 
 // ShadCN UI
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +31,7 @@ import {
   Sparkles,
   Palette,
   Zap,
+  Dices,
 } from "lucide-react";
 
 export default function GeneratePage() {
@@ -42,6 +44,7 @@ export default function GeneratePage() {
   const [imgLoading, setImgLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [imageData, setImageData] = useState(null);
+  const [isFlashing, setIsFlashing] = useState(false);
 
   // UI CONTROLS
   const [quality, setQuality] = useState(80);
@@ -85,6 +88,22 @@ export default function GeneratePage() {
   }, [isLoaded, isSignedIn, router]);
 
   const limitReached = userPlan === "FREE" && generationCount >= 5;
+
+  // ▶ SURPRISE ME HANDLER
+  const handleSurpriseMe = () => {
+    const randomIndex = Math.floor(Math.random() * surprisePrompts.length);
+    const randomPrompt = surprisePrompts[randomIndex];
+
+    if (randomPrompt === prompt) {
+      return handleSurpriseMe();
+    }
+
+    setPrompt(randomPrompt);
+    
+    // Trigger a visual "flash" or "pulse" effect on the textarea
+    setIsFlashing(true);
+    setTimeout(() => setIsFlashing(false), 600);
+  };
 
   // ▶ GENERATE HANDLER
   const generate = async () => {
@@ -190,18 +209,41 @@ export default function GeneratePage() {
       <div className="flex flex-col lg:flex-row gap-10">
         {/* LEFT SIDE */}
         <Card className="w-full lg:w-1/3 shadow-lg border rounded-2xl p-6 relative h-fit">
-          <div className="relative mt-2">
-            <label className="absolute -top-3 left-4 px-2 bg-white text-gray-600 text-sm">
+          <div className="flex justify-between items-center">
+            <label className="text-gray-700 font-bold text-sm uppercase tracking-wider">
               Describe your image
             </label>
+            
+            <button
+              onClick={handleSurpriseMe}
+              disabled={loading}
+              className="
+                flex items-center gap-1.5 px-3 py-1.5 
+                bg-purple-50 text-purple-600 font-bold text-xs
+                rounded-full border border-purple-100
+                hover:bg-purple-600 hover:text-white hover:shadow-lg
+                active:scale-95 transition-all duration-300
+                disabled:opacity-50 disabled:cursor-not-allowed
+                group
+              "
+            >
+              <Dices size={14} className="group-hover:rotate-12 transition-transform" />
+              Surprise Me
+            </button>
+          </div>
 
+          <div className="relative">
             <Textarea
               disabled={loading}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="A cyberpunk samurai walking through neon Tokyo..."
               rows={8}
-              className="resize-none text-[17px] rounded-xl border-2 min-h-[120px] p-4 focus:border-purple-500 transition-colors"
+              className={`
+                resize-none text-[17px] rounded-xl border-2 min-h-[120px] p-4 
+                focus:border-purple-500 transition-all duration-500
+                ${isFlashing ? "ring-4 ring-purple-200 border-purple-400 bg-purple-50/30" : ""}
+              `}
             />
             {userPlan === "FREE" && (
               <div className="mt-2 text-right">
