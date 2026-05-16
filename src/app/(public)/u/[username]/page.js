@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getPublicUserProfile } from "@/app/api/user/userActions";
+import { getOptimizedCloudinaryUrl, blurDataURL } from "@/lib/utils";
 
 // ⭐ ShadCN UI
 import { Skeleton } from "@/components/ui/skeleton";
@@ -83,7 +84,7 @@ export default function UserProfilePage() {
 
       {/* ⭐ INSTAGRAM STYLE IMAGE GRID ⭐ */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-        {images.map((img) => {
+        {images.map((img, index) => {
           const shortPrompt =
             img.prompt.length > 50
               ? img.prompt.slice(0, 50) + "..."
@@ -107,7 +108,7 @@ export default function UserProfilePage() {
             >
               {/* Big Instagram-like Image */}
               <Image
-                src={img.url}
+                src={getOptimizedCloudinaryUrl(img.url, 600)}
                 alt={img.prompt}
                 width={800}
                 height={800}
@@ -116,6 +117,11 @@ export default function UserProfilePage() {
                   transition-all duration-700
                   group-hover:scale-110
                 "
+                unoptimized={true}
+                sizes="(max-width: 768px) 50vw, 33vw"
+                priority={index < 4}
+                placeholder="blur"
+                blurDataURL={blurDataURL}
               />
 
               {/* Overlay */}

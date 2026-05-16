@@ -1,7 +1,7 @@
 "use server";
 import { db } from "@/db";
-import { images } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { images, users } from "@/db/schema";
+import { desc, eq, and } from "drizzle-orm";
 // import { nanoid } from "nanoid";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -69,16 +69,34 @@ export async function getUserImages(userId) {
   }
 }
 
-export async function getPublicImages() {
+export async function getPublicImages(page = 1, limit = 10) {
   try {
-    return await db
-      .select()
+    const offset = (page - 1) * limit;
+    const result = await db
+      .select({
+        id: images.id,
+        ownerId: images.ownerId,
+        url: images.url,
+        prompt: images.prompt,
+        isPublished: images.isPublished,
+        createdAt: images.createdAt,
+        updatedAt: images.updatedAt,
+        user: {
+          username: users.username,
+          imageUrl: users.avatar,
+        }
+      })
       .from(images)
+      .leftJoin(users, eq(images.ownerId, users.id))
       .where(eq(images.isPublished, true))
-      .orderBy(desc(images.createdAt));
+      .orderBy(desc(images.updatedAt))
+      .limit(limit)
+      .offset(offset);
+      
+    return result;
   } catch (error) {
     console.error("Failed to get public images:", error);
-    return { error: "Failed to get public images" };
+    return []; // Return empty array on failure
   }
 }
 

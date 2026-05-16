@@ -1,58 +1,62 @@
 "use client";
 
 import { getPublicImages } from "@/app/api/images/imageActions";
-import { getPublicUserProfile } from "@/app/api/user/userActions";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { getOptimizedCloudinaryUrl, blurDataURL } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function ExplorePage() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const fetchImages = async (pageNum, isInitial = false) => {
+    try {
+      if (isInitial) setLoading(true);
+      else setLoadingMore(true);
+
+      const data = await getPublicImages(pageNum, 10);
+      
+      const formattedImages = data.map((img) => ({
+        ...img,
+        user: {
+          username: img.user?.username || img.ownerId?.slice(-8),
+          imageUrl: img.user?.imageUrl || null,
+        },
+      }));
+
+      if (data.length < 10) {
+        setHasMore(false);
+      }
+
+      if (isInitial) {
+        setImages(formattedImages);
+      } else {
+        setImages((prev) => [...prev, ...formattedImages]);
+      }
+    } catch {
+      if (isInitial) setImages([]);
+    } finally {
+      if (isInitial) setLoading(false);
+      else setLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getPublicImages();
-        // Fetch simple user info (just username + avatar)
-        const imagesWithUser = await Promise.all(
-          data.map(async (img) => {
-            try {
-              const userData = await getPublicUserProfile(img.ownerId);
-              return {
-                ...img,
-                user: {
-                  username: userData?.user.username || img.ownerId?.slice(-8),
-                  imageUrl: userData?.user?.imageUrl,
-                },
-              };
-            } catch {
-              return {
-                ...img,
-                user: {
-                  username: img.ownerId?.slice(-8),
-                  imageUrl: null,
-                },
-              };
-            }
-          })
-        );
-
-        imagesWithUser.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        );
-
-        setImages(imagesWithUser);
-      } catch {
-        setImages([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    fetchImages(1, true);
   }, []);
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchImages(nextPage, false);
+  };
 
   /* ------------------------- SKELETON --------------------------- */
   if (loading) {
@@ -116,7 +120,7 @@ export default function ExplorePage() {
 
   /* ----------------------- MAIN EXPLORE PAGE ---------------------------- */
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 pb-24">
       {/* Heading */}
       <div className="mb-12 text-center">
         <h1 className="text-4xl font-bold bg-linear-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">
@@ -134,7 +138,7 @@ export default function ExplorePage() {
         gap-2 md:gap-8
       "
       >
-        {images.map((img) => {
+        {images.map((img, index) => {
           const user = img.user;
           return (
             <Link
@@ -150,7 +154,7 @@ export default function ExplorePage() {
             >
               {/* IMAGE */}
               <Image
-                src={img.url}
+                src={getOptimizedCloudinaryUrl(img.url, 800)}
                 alt={"Image by " + img.user.username}
                 width={800}
                 height={1000}
@@ -159,6 +163,11 @@ export default function ExplorePage() {
       transition-transform duration-700
       group-hover:scale-[1.05]
     "
+                unoptimized={true}
+                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                priority={index < 4}
+                placeholder="blur"
+                blurDataURL={blurDataURL}
               />
 
               {/* ⭐ ALWAYS SHOW — TIME BADGE */}
@@ -251,6 +260,27 @@ export default function ExplorePage() {
           );
         })}
       </div>
+      
+      {/* LOAD MORE BUTTON */}
+      {hasMore && (
+        <div className="mt-12 flex justify-center">
+          <Button
+            onClick={loadMore}
+            disabled={loadingMore}
+            variant="outline"
+            className="rounded-full px-8 py-6 text-lg border-purple-500/30 hover:bg-purple-500/10 transition-all"
+          >
+            {loadingMore ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              "Load More"
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,7 +6,6 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { generateImage } from "@/lib/aiImageGenerator";
 import { NextResponse } from "next/server";
-import { fetchAsBuffer } from "@/lib/utils/fetchAsBuffer";
 import { uploadImageToCloudinary } from "@/lib/upload/cloudinary";
 import { saveImageToDB } from "../images/imageActions";
 
@@ -65,7 +64,7 @@ export async function POST(req) {
       );
     }
 
-    // 6. GENERATE IMAGE
+    // 6. GENERATE IMAGE (Now returns buffer directly)
     const result = await generateImage(prompt);
 
     // If AI service failed
@@ -81,10 +80,8 @@ export async function POST(req) {
       );
     }
 
-    //7. convert into buffer
-    const buffer = await fetchAsBuffer(result.imageUrl);
-
-    // 3) Upload buffer → Cloudinary
+    // 7) Upload buffer → Cloudinary
+    const buffer = result.buffer;
     const cloudUpload = await uploadImageToCloudinary(buffer);
 
     if (!cloudUpload.success)

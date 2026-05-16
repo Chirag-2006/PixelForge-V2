@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, ArrowUp } from "lucide-react";
+import { getOptimizedCloudinaryUrl, blurDataURL } from "@/lib/utils";
 
 export default function ImageCard({ url, published, onPublish, onDelete }) {
   return (
@@ -17,7 +18,7 @@ export default function ImageCard({ url, published, onPublish, onDelete }) {
       {/* Image */}
       <div className="overflow-hidden">
         <Image
-          src={url}
+          src={getOptimizedCloudinaryUrl(url, 600)}
           alt="user image" 
           width={800}
           height={600}
@@ -27,6 +28,10 @@ export default function ImageCard({ url, published, onPublish, onDelete }) {
             md:group-hover:scale-105 
             md:transition-transform md:duration-500
           "
+          unoptimized={true}
+          sizes="(max-width: 768px) 50vw, 33vw"
+          placeholder="blur"
+          blurDataURL={blurDataURL}
         />
       </div>
 

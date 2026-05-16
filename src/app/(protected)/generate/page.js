@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { getOptimizedCloudinaryUrl, blurDataURL } from "@/lib/utils";
 
 // ShadCN UI
 import { Textarea } from "@/components/ui/textarea";
@@ -15,11 +16,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 
 // Icons
@@ -30,6 +29,7 @@ import {
   Wand2,
   Sparkles,
   Palette,
+  Zap,
 } from "lucide-react";
 
 export default function GeneratePage() {
@@ -54,14 +54,13 @@ export default function GeneratePage() {
   // Upgrade Dialog
   const [showUpgrade, setShowUpgrade] = useState(false);
 
-  // Page skeleton
-  const [pageLoading, setPageLoading] = useState(false);
+  // Page states
+  const [dataFetching, setDataFetching] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // GET USER PLAN + LIMIT FROM BACKEND
   useEffect(() => {
     async function loadUser() {
-      setPageLoading(true);
       try {
         const res = await fetch("/api/user");
         const data = await res.json();
@@ -71,12 +70,12 @@ export default function GeneratePage() {
       } catch (err) {
         console.log("Error loading user:", err);
       } finally {
-        setPageLoading(false); // ⭐ STOP LOADING ONLY AFTER USER DATA LOADED
+        setDataFetching(false);
       }
     }
 
-    loadUser();
-  }, []);
+    if (isSignedIn) loadUser();
+  }, [isSignedIn]);
 
   // PROTECT ROUTE
   useEffect(() => {
@@ -143,8 +142,6 @@ export default function GeneratePage() {
     }
   };
 
-  // console.log("image data in genrate page", imageData);
-
   // ▶ PUBLISH IMAGE
   const publishImage = async () => {
     const insertedId = imageData?.imageData?.[0]?.id;
@@ -153,7 +150,7 @@ export default function GeneratePage() {
       toast.error("No image to publish");
       return;
     }
-    setUploadingImage(true); // ⭐ start loading
+    setUploadingImage(true);
 
     try {
       const res = await fetch("/api/images/publish", {
@@ -172,39 +169,17 @@ export default function GeneratePage() {
     } catch {
       toast.error("Network error");
     } finally {
-      setUploadingImage(false); // ⭐ stop loading
+      setUploadingImage(false);
     }
   };
 
-  // ▶️ Download Image
-  // const downloadImage = () => {
-  //    if (!imageUrl) {
-  //   toast.error("No image to download");
-  //   return;
-  // }
-  // const link = document.createElement("a");
-  // link.href = imageUrl;
-  // link.download = "pixelForge-image.png"; // File ka naam jo download hoga
-  // document.body.appendChild(link);
-  // link.click();  // Yahi click download trigger karta hai bina reload ya redirect ke
-  // document.body.removeChild(link);
-  // };
-
-  // SKELETON LOADING
-  if (!isSignedIn || pageLoading) {
-    return (
-      <div className="p-10 space-y-6">
-        <Skeleton className="h-8 w-64" />
-        <div className="flex flex-col md:flex-row gap-8">
-          <Skeleton className="h-80 flex-1" />
-          <Skeleton className="h-80 flex-1" />
-        </div>
-      </div>
-    );
+  // EARLY RETURN ONLY IF NOT SIGNED IN AFTER LOADING CLERK
+  if (isLoaded && !isSignedIn) {
+    return null;
   }
 
   return (
-    <div className="container mx-auto p-6 pb-20">
+    <div className="container mx-auto p-6 pb-20 animate-in fade-in duration-500">
       {/* TITLE */}
       <div className="flex items-center justify-center mb-10">
         <h1 className="text-4xl font-extrabold tracking-tight">
@@ -214,7 +189,7 @@ export default function GeneratePage() {
 
       <div className="flex flex-col lg:flex-row gap-10">
         {/* LEFT SIDE */}
-        <Card className="w-full lg:w-1/3 shadow-lg border rounded-2xl p-6 relative">
+        <Card className="w-full lg:w-1/3 shadow-lg border rounded-2xl p-6 relative h-fit">
           <div className="relative mt-2">
             <label className="absolute -top-3 left-4 px-2 bg-white text-gray-600 text-sm">
               Describe your image
@@ -226,17 +201,23 @@ export default function GeneratePage() {
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="A cyberpunk samurai walking through neon Tokyo..."
               rows={8}
-              className="resize-none text-[17px] rounded-xl border-2 min-h-[120px] p-4"
+              className="resize-none text-[17px] rounded-xl border-2 min-h-[120px] p-4 focus:border-purple-500 transition-colors"
             />
             {userPlan === "FREE" && (
-              <p className="text-right text-[18px] text-purple-600 mt-2 font-medium">
-                ({generationCount}/5) images generated
-              </p>
+              <div className="mt-2 text-right">
+                {dataFetching ? (
+                  <Skeleton className="h-6 w-32 ml-auto" />
+                ) : (
+                  <p className="text-[18px] text-purple-600 font-medium">
+                    ({generationCount}/5) images generated
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
           {/* SLIDERS */}
-          <div className="mt-6 space-y-5 opacity-100">
+          <div className="mt-6 space-y-5">
             {/* QUALITY */}
             <div>
               <p className="font-semibold flex items-center gap-2 mb-1">
@@ -246,7 +227,7 @@ export default function GeneratePage() {
                 value={[quality]}
                 onValueChange={(v) => setQuality(v[0])}
                 max={100}
-                disabled={loading} // 🔥 prevents changes while generating
+                disabled={loading}
                 className={loading ? "cursor-not-allowed opacity-60" : ""}
               />
             </div>
@@ -260,7 +241,7 @@ export default function GeneratePage() {
                 value={[creativity]}
                 onValueChange={(v) => setCreativity(v[0])}
                 max={100}
-                disabled={loading} // 🔥 prevents changes
+                disabled={loading}
                 className={loading ? "cursor-not-allowed opacity-60" : ""}
               />
             </div>
@@ -268,24 +249,24 @@ export default function GeneratePage() {
 
           {/* BUTTON */}
           <Button
-            // disabled={loading}
             className={`
-    w-full mt-6 py-8 text-lg rounded-xl font-semibold shadow-sm transition-all duration-300 
-    ${
-      limitReached
-        ? "bg-purple-600 hover:bg-purple-700 text-white"
-        : "bg-black hover:bg-gray-900 text-white"
-    }
-    ${loading && "opacity-50 cursor-not-allowed"}
-  `}
+              w-full mt-6 py-8 text-lg rounded-xl font-semibold shadow-sm transition-all duration-300 
+              ${
+                limitReached
+                  ? "bg-purple-600 hover:bg-purple-700 text-white"
+                  : "bg-black hover:bg-gray-900 text-white"
+              }
+              ${loading && "opacity-50 cursor-not-allowed"}
+            `}
             onClick={limitReached ? () => setShowUpgrade(true) : generate}
+            disabled={loading}
           >
             {limitReached ? (
               <span className="flex items-center justify-center gap-2 text-[18px]">
                 ⚡ Upgrade to Pro
               </span>
             ) : loading ? (
-              <span className="flex items-center gap-2 cursor-not-allowed">
+              <span className="flex items-center gap-2">
                 <Loader2 className="animate-spin" size={20} /> Generating...
               </span>
             ) : (
@@ -297,62 +278,73 @@ export default function GeneratePage() {
         </Card>
 
         {/* RIGHT SIDE */}
-        <Card className="flex-1 shadow-xl border rounded-2xl p-2 flex flex-col items-center justify-center min-h-[600px]">
+        <Card className="flex-1 shadow-xl border rounded-2xl p-2 flex flex-col items-center justify-center min-h-[500px] lg:min-h-[600px] bg-gray-50/30">
           {!imageUrl && loading && (
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4 text-center">
               <RefreshCw
                 className="animate-spin text-purple-600"
                 size={70}
                 strokeWidth="1.5"
               />
-              <p className="text-gray-500">Crafting your masterpiece...</p>
+              <div className="space-y-1">
+                <p className="text-xl font-semibold text-gray-700">Crafting your masterpiece...</p>
+                <p className="text-gray-500 text-sm italic">AI is painting from your words</p>
+              </div>
             </div>
           )}
 
           {imageUrl && (
-            <Image
-              src={imageUrl}
-              width={600}
-              height={600}
-              alt="Generated AI Image"
-              unoptimized
-              onLoad={() => setImgLoading(false)}
-              className="rounded-xl shadow-xl animate-[fadeIn_0.6s_ease-out]"
-            />
+            <div className="relative w-full aspect-square max-w-[600px] group">
+              <Image
+                src={getOptimizedCloudinaryUrl(imageUrl, 800)}
+                fill
+                alt="Generated AI Image"
+                unoptimized={true}
+                onLoad={() => setImgLoading(false)}
+                className="rounded-xl shadow-xl object-cover transition-opacity duration-500 ease-in"
+                placeholder="blur"
+                blurDataURL={blurDataURL}
+              />
+            </div>
           )}
 
           {imageUrl && !loading && (
-            <div className="flex gap-4 mt-6 px-6 w-full">
+            <div className="flex gap-4 mt-6 px-6 w-full max-w-[600px]">
               <Button
-                className="bg-green-600 hover:bg-green-700 rounded-xl p-5 w-1/2"
+                className="bg-green-600 hover:bg-green-700 rounded-xl p-6 w-1/2 flex items-center gap-2 text-white"
                 onClick={publishImage}
                 disabled={uploadingImage}
               >
                 {uploadingImage ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={18} />
-                    Publishing…
-                  </span>
+                  <Loader2 className="animate-spin" size={18} />
                 ) : (
-                  <>
-                    <UploadCloud size={18} /> Publish
-                  </>
+                  <UploadCloud size={20} />
                 )}
+                {uploadingImage ? "Publishing…" : "Publish"}
               </Button>
 
               <Button
-                className="bg-blue-600 hover:bg-blue-700 rounded-xl w-1/2 p-5"
+                variant="outline"
+                className="border-purple-600 text-purple-600 hover:bg-purple-50 rounded-xl w-1/2 p-6 flex items-center gap-2"
                 onClick={generate}
               >
-                <RefreshCw size={18} /> Regenerate
+                <RefreshCw size={20} /> Regenerate
               </Button>
             </div>
           )}
 
           {!imageUrl && !loading && (
-            <p className="text-gray-500 mt-10 text-lg">
-              Your generated image will appear here...
-            </p>
+            <div className="text-center p-10">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="text-gray-400" size={40} />
+              </div>
+              <p className="text-gray-500 text-lg font-medium">
+                Your generated image will appear here
+              </p>
+              <p className="text-gray-400 text-sm mt-1">
+                Describe anything above and click generate
+              </p>
+            </div>
           )}
         </Card>
       </div>
@@ -362,43 +354,32 @@ export default function GeneratePage() {
         <Dialog open={showUpgrade} onOpenChange={setShowUpgrade}>
           <DialogContent className="rounded-xl md:max-w-md max-w-xs mx-auto">
             <DialogHeader>
-              <DialogTitle className="text-lg font-semibold">
-                Upgrade Required ⚡
+              <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                <Zap className="text-yellow-500 fill-yellow-500" /> Upgrade Required 
               </DialogTitle>
 
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-gray-600 mt-2">
                 You have reached your free image generation limit. Upgrade to
                 Pro for unlimited access and faster AI generation.
               </p>
             </DialogHeader>
 
-            <div className="flex gap-3 justify-end mt-6">
-              {/* CANCEL (Desktop only) */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-end mt-6">
               <Button
                 variant="outline"
-                className="w-full hidden md:block md:w-auto"
+                className="rounded-xl"
                 onClick={() => setShowUpgrade(false)}
               >
-                Cancel
+                Maybe Later
               </Button>
 
-              {/* UPGRADE BUTTON */}
               <Button
-                className="bg-purple-600 text-white w-full md:w-auto rounded-xl"
+                className="bg-purple-600 text-white rounded-xl px-8"
                 onClick={() => router.push("/pricing")}
               >
                 Upgrade Now 🚀
               </Button>
             </div>
-
-            {/* CANCEL FOR MOBILE BELOW BUTTONS (Optional, UX better) */}
-            <Button
-              variant="outline"
-              className="w-full md:hidden mt-3"
-              onClick={() => setShowUpgrade(false)}
-            >
-              Cancel
-            </Button>
           </DialogContent>
         </Dialog>
       )}
