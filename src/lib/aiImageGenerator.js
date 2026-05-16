@@ -1,6 +1,6 @@
 const DEFAULT_WIDTH = 1024;
 const DEFAULT_HEIGHT = 1024;
-const REQUEST_TIMEOUT_MS = 15000;
+const REQUEST_TIMEOUT_MS = 20000;
 const RETRY_DELAY_MS = 800;
 
 const PROVIDERS = [
@@ -87,7 +87,7 @@ async function fetchImage(url) {
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "");
       const details = errorBody ? `: ${errorBody.slice(0, 180)}` : "";
-      throw new Error(`Pollinations API failed with ${response.status}${details}`);
+      throw new Error(`Pollinations API failed with ${response.status}`);
     }
 
     const contentType = response.headers.get("content-type") || "";
