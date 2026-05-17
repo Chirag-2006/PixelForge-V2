@@ -1,120 +1,200 @@
-# pixelForge – AI Image Generator 🚀
+# 🚀 pixelForge — AI Image Generation Platform
 
-A modern AI-based image generation platform built with **Next.js**, **Clerk Authentication**, **MySQL**, **Drizzle ORM**, **ShadCN UI**, and advanced AI models via **Pollination AI**, with secure image storage using **Cloudinary**.
+![PixelForge banner](https://res.cloudinary.com/ddrrc7kbh/image/upload/v1778994560/pixelForge_banner_mpb6ua.png)
+
+<div align="center">
+
+### Create Stunning AI Images with Modern Web Technologies ✨
+
+An advanced AI-powered image generation platform built using **Next.js 14**, **Clerk Authentication**, **Drizzle ORM**, **MySQL**, **Cloudinary**, and **Pollination AI**.
+
+Designed with a modern UI/UX using **ShadCN UI**, **TailwindCSS**, and smooth animations powered by **Framer Motion**.
+
+</div>
 
 ---
 
-## ✨ Features
+## 🌟 Overview
 
-### 🖼️ AI Image Generation
+**pixelForge** is a full-stack AI image generation platform where users can generate high-quality AI images from text prompts in real-time.
 
-- High-quality prompt-based image generation
+The platform includes:
+
+- 🔐 Secure authentication
+- ☁️ Cloud image storage
+- 📊 User dashboard
+- ⚡ Fast AI generation workflow
+- 🎨 Beautiful modern interface
+- 📱 Fully responsive design
+
+---
+
+# ✨ Core Features
+
+## 🖼️ AI Image Generation
+
+Generate stunning AI images instantly using powerful AI models.
+
+### Features Included:
+
+- Prompt-based image generation
 - Pollination AI integration
-- Smart loading + request handling
+- Real-time loading states
 - Duplicate request prevention
-- Real-time generation count (ex: `4/5 images used`)
-- Free limit detection — button auto-switches to **Upgrade Plan**
-
-### 🔒 Authentication & User System
-
-- Seamless sign-in with Clerk
-- OAuth support
-- User data stored in MySQL (Drizzle ORM)
-
-### ☁️ Cloud Image Storage
-
-- Cloudinary upload system
-- Auto-optimized high-quality URLs
-- Images stored & linked to user
-
-### 📊 Dashboard
-
-- See all generated images
-- Track daily usage
-- 3-tab UI using ShadCN components
-- Clean & fast layout
-
-### 🎨 Modern UI/UX
-
-- Built with ShadCN UI + TailwindCSS
-- Smooth animations using Framer Motion
-- Fully responsive
-- Beautiful buttons, cards, modals, tabs
+- Smart request handling
+- Usage tracking system
+- Daily free image limits
+- Auto-switch to **Upgrade Plan** when limit exceeds
 
 ---
 
-## 🛠️ Tech Stack
+## 🔒 Authentication System
 
-### **Frontend**
+Secure and modern authentication powered by Clerk.
+
+### Includes:
+
+- Email authentication
+- OAuth login support
+- Protected routes
+- Session handling
+- User-based image storage
+
+---
+
+## ☁️ Cloudinary Image Storage
+
+All generated images are securely stored in Cloudinary CDN.
+
+### Benefits:
+
+- Fast image delivery
+- Optimized image URLs
+- High-quality image rendering
+- Secure cloud storage
+- User-specific image management
+
+---
+
+## 📊 Dashboard Experience
+
+A clean dashboard for managing generated images.
+
+### Dashboard Features:
+
+- View all generated images
+- Track daily usage
+- Responsive tab layout
+- Smooth UI transitions
+- Modern ShadCN components
+
+---
+
+## 🎨 Modern UI/UX
+
+Built with a clean and premium design approach.
+
+### UI Highlights:
+
+- ShadCN UI components
+- TailwindCSS styling
+- Framer Motion animations
+- Fully responsive layout
+- Beautiful cards, modals & tabs
+- Smooth user interactions
+
+---
+
+# 🛠️ Tech Stack
+
+## ⚡ Frontend
 
 - Next.js 14 (App Router)
+- React.js
 - TailwindCSS
 - ShadCN UI
-- React
 - Axios
 - React Query
+- Framer Motion
 
-### **Backend**
+---
+
+## 🔥 Backend
 
 - Next.js API Routes
 - Pollination AI
+- Clerk Authentication
 - Drizzle ORM
-- MySQL
-- Clerk Auth
+- MySQL Database
 
-### **Icon**
+---
 
-- Lucide React
-
-### **Cloud**
+## ☁️ Cloud Services
 
 - Cloudinary CDN
 
 ---
 
-## 📂 Folder Structure (Simplified)
+## 🎯 Icons & UI
 
-```
+- Lucide React
+
+---
+
+# 📂 Project Structure
+
+```bash
 pixelForge/
- ├─ app/
- │   ├─ (protected)/
- │   ├─ (public)/
- │   ├─ api/
- │   │   └─ generate/route.js
- │   └─ layout.js
- ├─ components/
- ├─ lib/
- │   ├─ aiImageGenerator.js
- │   └─ utils.js
- ├─ db/
- │   ├─ index.js
- │   ├─ schema.js
- ├─ public/
- └─ README.md
+│
+├── app/
+│   ├── (protected)/
+│   ├── (public)/
+│   ├── api/
+│   │   └── generate/
+│   │       └── route.js
+│   └── layout.js
+│
+├── components/
+├── lib/
+│   ├── aiImageGenerator.js
+│   └── utils.js
+│
+├── data/
+│
+├── db/
+│   ├── index.js
+│   └── schema.js
+│
+├── public/
+└── README.md
 ```
 
 ---
 
-## 🔧 Installation
+# ⚙️ Installation & Setup
 
-### 1️⃣ Clone Repository
+## 1️⃣ Clone Repository
 
 ```bash
 git clone https://github.com/Chirag-2006/PixelForge-V2.git
 cd pixelForge
 ```
 
-### 2️⃣ Install Dependencies
+---
+
+## 2️⃣ Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3️⃣ Create Environment File
+---
 
-Add `.env.local`:
+## 3️⃣ Setup Environment Variables
 
-```
+Create a `.env.local` file in the root directory.
+
+```env
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
 
@@ -127,13 +207,17 @@ CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 ```
 
-### 4️⃣ Setup Database
+---
+
+## 4️⃣ Setup Database
 
 ```bash
 npm run db:push
 ```
 
-### 5️⃣ Start Development Server
+---
+
+## 5️⃣ Run Development Server
 
 ```bash
 npm run dev
@@ -141,11 +225,15 @@ npm run dev
 
 ---
 
-## 🚀 API Route
+# 🚀 API Endpoint
 
-### **POST /api/generate**
+## `POST /api/generate`
 
-#### Request Body:
+Generate AI images from user prompts.
+
+---
+
+## 📥 Request Body
 
 ```json
 {
@@ -153,47 +241,68 @@ npm run dev
 }
 ```
 
-### 🔄 API Process Flow:
+---
 
-1. Authenticate Clerk user
-2. Check user’s free usage limit
-3. Send prompt → Pollination AI
-4. Convert output to buffer
-5. Upload image → Cloudinary
-6. Store image URL in MySQL using Drizzle
-7. Return URL to frontend
+## ⚡ API Workflow
+
+```text
+1. Authenticate User via Clerk
+2. Validate Daily Usage Limit
+3. Send Prompt to Pollination AI
+4. Convert AI Output to Buffer
+5. Upload Image to Cloudinary
+6. Store URL in MySQL via Drizzle ORM
+7. Return Image URL to Frontend
+```
 
 ---
 
-## 📸 Screenshots (Add Later)
+# 📸 Screenshots
 
-```
+> Add your project screenshots here
+
+```text
 [ ] Homepage
-[ ] Generate Page
+[ ] AI Generate Page
 [ ] Dashboard
 [ ] Upgrade Modal
+[ ] Mobile Responsive UI
 ```
 
 ---
 
-## 🚀 Upcoming Improvements
+# 🚀 Future Improvements
 
-- Stripe payment integration
-- Unlimited Pro images
-- User prompt history
-- Advanced upscaling model
-- Share-to-social feature
-
----
-
-## 👨‍💻 Author
-
-**Chirag Arya**  
-Full-Stack + AI Developer  
-Creator of pixelForge
+- 💳 Stripe Payment Integration
+- 🔥 Unlimited Pro Plan
+- 📝 Prompt History
+- 🖼️ AI Upscaling Models
+- 🌍 Share-to-Social Feature
+- 🎭 Multiple AI Styles
+- 📦 Image Download Manager
 
 ---
 
-## 📄 License
+# 👨‍💻 Author
 
-MIT License
+## Chirag Arya
+
+Full-Stack Web Developer & AI Enthusiast
+
+- 🎓 IIT Kharagpur Graduate
+- 💻 MERN & Next.js Developer
+- 🚀 Passionate about AI-powered applications
+
+---
+
+# 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+<div align="center">
+
+### ⭐ If you like this project, consider giving it a star on GitHub ⭐
+
+</div>
