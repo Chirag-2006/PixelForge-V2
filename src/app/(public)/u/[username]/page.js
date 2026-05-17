@@ -83,7 +83,7 @@ export default function UserProfilePage() {
       <div className="border-t my-8"></div>
 
       {/* ⭐ INSTAGRAM STYLE IMAGE GRID ⭐ */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 sm:grid-cols-2 gap-5">
         {images.map((img, index) => {
           const shortPrompt =
             img.prompt.length > 50
@@ -124,22 +124,23 @@ export default function UserProfilePage() {
                 blurDataURL={blurDataURL}
               />
 
-              {/* Overlay */}
+              {/* Overlay (Always on mobile, hover on desktop) */}
               <div
                 className="
                 absolute inset-0 bg-linear-to-t
                 from-black/80 via-black/40 to-transparent
-                opacity-0 group-hover:opacity-100
+                opacity-100 md:opacity-0 md:group-hover:opacity-100
                 transition-all duration-500
                 "
               />
 
-              {/* Prompt + Date */}
+              {/* Prompt + Date (Always on mobile, hover on desktop) */}
               <div
                 className="
                 absolute bottom-0 left-0 right-0 p-4
-                opacity-0 translate-y-6
-                group-hover:opacity-100 group-hover:translate-y-0
+                opacity-100 translate-y-0
+                md:opacity-0 md:translate-y-6
+                md:group-hover:opacity-100 md:group-hover:translate-y-0
                 transition-all duration-500
                 "
               >

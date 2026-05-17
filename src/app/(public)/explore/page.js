@@ -134,7 +134,7 @@ export default function ExplorePage() {
       {/* Larger Images Grid (Library style) */}
       <div
         className="
-        grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 
+        grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 
         gap-2 md:gap-8
       "
       >
@@ -185,23 +185,24 @@ export default function ExplorePage() {
                 </span>
               </div>
 
-              {/* DARK OVERLAY ON HOVER */}
+              {/* DARK OVERLAY (ALWAYS ON MOBILE, HOVER ON DESKTOP) */}
               <div
                 className="
       absolute inset-0
       bg-linear-to-t from-black/85 via-black/40 to-transparent
-      opacity-0 group-hover:opacity-100 
+      opacity-100 md:opacity-0 md:group-hover:opacity-100 
       transition-all duration-500
     "
               ></div>
 
-              {/* ⭐ HOVER INFO (BOTTOM CARD) */}
+              {/* ⭐ INFO (ALWAYS ON MOBILE, HOVER ON DESKTOP) */}
               <div
                 className="
       absolute bottom-0 left-0 right-0
       p-4 flex flex-col gap-2
-      translate-y-10 group-hover:translate-y-0
-      opacity-0 group-hover:opacity-100
+      translate-y-0 opacity-100
+      md:translate-y-10 md:group-hover:translate-y-0
+      md:opacity-0 md:group-hover:opacity-100
       transition-all duration-500
       z-30
     "
