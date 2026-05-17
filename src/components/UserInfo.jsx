@@ -43,7 +43,7 @@ export default function UserInfo({ profile, imagesCount }) {
   return (
     <div className="flex items-center gap-6 mb-12">
       {/* Avatar */}
-      <Avatar className="w-24 h-24 border-4 border-purple-500">
+      <Avatar className="w-18 h-18 sm:w-24 sm:h-24 border-4 border-purple-500">
         <AvatarImage src={profile?.imageUrl} />
         <AvatarFallback className="bg-linear-to-br from-purple-500 to-blue-600 text-white text-3xl">
           {profile?.username?.charAt(0)?.toUpperCase()}
@@ -52,13 +52,13 @@ export default function UserInfo({ profile, imagesCount }) {
 
       <div className="flex-1 space-y-3">
         <div className="flex items-center gap-4 flex-wrap">
-          <h1 className="text-3xl font-semibold">@{profile?.username}</h1>
+          <h1 className="sm:text-3xl text-xl font-semibold">@{profile?.username}</h1>
 
           {/* FOLLOW + MESSAGE BUTTONS */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               onClick={toggleFollow}
-              className={`px-6 py-1 rounded-lg font-semibold transition-all`}
+              className={`px-3 sm:px-6 py-1 rounded-lg font-semibold transition-all`}
             >
               {isFollowing ? "Following" : "Follow"}
             </Button>
@@ -74,7 +74,7 @@ export default function UserInfo({ profile, imagesCount }) {
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-8 text-gray-700 font-medium text-sm">
+        <div className="flex items-center gap-8 text-xs text-gray-700 font-medium sm:text-sm">
           <span>
             <strong>{imagesCount}</strong> posts
           </span>
